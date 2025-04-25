@@ -1,6 +1,6 @@
 # Pathfinder
 
-A Python-based potion crafting simulator that helps find the shortest path to achieve desired effects by combining different ingredients.
+Python-based potion crafting simulator.
 
 ## Features
 
