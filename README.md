@@ -11,9 +11,6 @@ cd pathfinder
 
 # Install dependencies
 pip install -r requirements.txt
-
-# For development (includes testing tools)
-pip install -r requirements.txt[dev]
 ```
 
 ## Usage
@@ -74,9 +71,13 @@ python main.py -d "Calming" "Energizing"
 python main.py -d 3,11
 ```
 
-Start with existing effects:
+Find path with starting effects:
 ```bash
-python main.py -d "Calming" -s "Energizing"
+# Start with Energizing, find path to Anti-gravity
+python main.py -d "Anti-gravity" -s "Energizing"
+
+# Start with effect 11, find path to effects 23,21,9
+python main.py -d 23,21,9 -s 11
 ```
 
 ## Development
@@ -84,24 +85,24 @@ python main.py -d "Calming" -s "Energizing"
 ### Running Tests
 
 ```bash
-# Install development dependencies
+# Install dependencies
 pip install -r requirements.txt
 
 # Run all tests
 pytest
 
-# Run tests with coverage report
-pytest --cov=src
+# Run tests with verbose output
+pytest -v
 
 # Run specific test file
-pytest tests/test_parser.py
+pytest tests/test_integration.py
 ```
 
 The test suite includes:
-- Unit tests for effect parsing
-- Unit tests for effect combinations
-- Unit tests for pathfinding
-- Edge cases and error handling
+- Integration tests that verify complete paths with real data
+- Parser tests for input validation and processing
+- Comprehensive test cases with known working combinations
+- Validation of effect transformations and complex paths
 
 ## Project Structure
 
@@ -119,9 +120,8 @@ pathfinder/
 │   └── utils/           # Helper functions
 │       └── parser.py    # Command-line argument parsing
 ├── tests/               # Test suite
-│   ├── test_parser.py   # Parser unit tests
-│   ├── test_engine.py   # Engine unit tests
-│   └── test_pathfinder.py # Pathfinder unit tests
+│   ├── test_integration.py # End-to-end tests with real data
+│   └── test_parser.py   # Input parsing tests
 ├── main.py              # Command-line interface
 └── requirements.txt     # Dependencies
 ```
