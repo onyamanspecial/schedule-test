@@ -12,7 +12,7 @@ PRIORITY_ORDER = [
     'Glowing', 'Long faced', 'Anti-gravity', 'Cyclopean', 'Zombifying', 'Shrinking'
 ]
 
-EFFECT_PRIORITY = {effect: idx for idx, effect in enumerate(PRIORITY_ORDER)}
+EFFECT_PRIORITY = {e: i for i, e in enumerate(PRIORITY_ORDER)}
 SORTED_EFFECTS = sorted(PRIORITY_ORDER)
 EFFECT_IDS = {idx+1: effect for idx, effect in enumerate(SORTED_EFFECTS)}
 
@@ -135,56 +135,37 @@ RULES_DATA = [
 
 class RuleEngine:
     def __init__(self):
-        self.ingredient_base = {}
-        self.effect_transforms = {}
-        for rule in RULES_DATA:
-            base_ing, base_eff, added_ing, res_eff, added_eff = rule
-            if base_ing:
-                self.ingredient_base[base_ing] = base_eff
-            if added_ing:
-                self.ingredient_base[added_ing] = added_eff
-            if base_eff and added_ing:
-                self.effect_transforms[(base_eff, added_ing)] = (res_eff, added_eff)
+        self.ingredient_base, self.effect_transforms = {}, {}
+        for b_ing, b_eff, a_ing, r_eff, a_eff in RULES_DATA:
+            if b_ing: self.ingredient_base[b_ing] = b_eff
+            if a_ing: self.ingredient_base[a_ing] = a_eff
+            if b_eff and a_ing: self.effect_transforms[(b_eff, a_ing)] = (r_eff, a_eff)
 
-    def get_transformations(self, current_effects, ingredient):
-        new_effects = list(current_effects)
-        added_eff = self.ingredient_base.get(ingredient)
-        for i, eff in enumerate(new_effects):
-            key = (eff, ingredient)
-            if key in self.effect_transforms:
-                new_eff, _ = self.effect_transforms[key]
-                if new_eff not in new_effects:
-                    new_effects[i] = new_eff
-        if added_eff and added_eff not in new_effects and len(new_effects) < MAX_EFFECTS:
-            new_effects.append(added_eff)
+    def get_transformations(self, effects, ingredient):
+        new_effects = list(effects)
+        if (added_eff := self.ingredient_base.get(ingredient)):
+            for i, eff in enumerate(new_effects):
+                if (key := (eff, ingredient)) in self.effect_transforms:
+                    new_eff, _ = self.effect_transforms[key]
+                    if new_eff not in new_effects: new_effects[i] = new_eff
+            if added_eff not in new_effects and len(new_effects) < MAX_EFFECTS:
+                new_effects.append(added_eff)
         return sorted(new_effects, key=lambda x: EFFECT_PRIORITY[x])
 
-class PathFinder:
-    def __init__(self, rule_engine):
-        self.rule_engine = rule_engine
-
-    def find_shortest_path(self, desired, starting=None):
-        starting = starting or []
-        desired_set = set(desired)
-        starting_sorted = sorted(starting, key=lambda x: EFFECT_PRIORITY[x])
-        if desired_set.issubset(starting_sorted):
-            return []
-        visited = set()
-        queue = deque([(starting_sorted, [])])
-        visited.add(tuple(starting_sorted))
-        while queue:
-            current_effects, path = queue.popleft()
-            if desired_set.issubset(current_effects):
-                return path
-            for ingredient in self.rule_engine.ingredient_base:
-                new_effects = self.rule_engine.get_transformations(current_effects, ingredient)
-                if len(new_effects) > MAX_EFFECTS:
-                    continue
-                state_key = tuple(new_effects)
-                if state_key not in visited:
-                    visited.add(state_key)
-                    queue.append((new_effects, path + [ingredient]))
-        return None
+def find_path(desired, starting=None):
+    engine = RuleEngine()
+    starting = sorted(starting or [], key=lambda x: EFFECT_PRIORITY[x])
+    if set(desired).issubset(starting): return []
+    visited, queue = {tuple(starting)}, deque([(starting, [])])
+    while queue:
+        effects, path = queue.popleft()
+        if set(desired).issubset(effects): return path
+        for ing in engine.ingredient_base:
+            if (new := engine.get_transformations(effects, ing)):
+                if len(new) <= MAX_EFFECTS and (key := tuple(new)) not in visited:
+                    visited.add(key)
+                    queue.append((new, path + [ing]))
+    return None
 
 def parse_effects(input_str):
     effects = []
@@ -213,7 +194,7 @@ def main():
     if not desired:
         return print("No valid desired effects")
 
-    path = PathFinder(RuleEngine()).find_shortest_path(desired, starting)
+    path = find_path(desired, starting)
     if path:
         print(' → '.join(path))
     else:
