@@ -1,5 +1,5 @@
 from collections import deque
-import time
+import argparse
 
 MAX_EFFECTS = 8
 
@@ -159,47 +159,6 @@ class RuleEngine:
             new_effects.append(added_eff)
         return sorted(new_effects, key=lambda x: EFFECT_PRIORITY[x])
 
-def display_effects():
-    print("\n" + "="*80)
-    print("Available Effects (ID: Name)".center(80))
-    print("="*80)
-    cols = 3
-    total = len(SORTED_EFFECTS)
-    rows = (total + cols - 1) // cols
-    for row in range(rows):
-        line = []
-        for col in range(cols):
-            idx = row + col * rows
-            if idx < total:
-                effect_id = idx + 1
-                name = SORTED_EFFECTS[idx]
-                line.append(f"[{effect_id:2d}] {name:20}")
-            else:
-                line.append(" " * 25)
-        print("  ".join(line))
-    print("="*80 + "\n")
-
-def parse_effects(input_str):
-    parts = input_str.strip().replace(',', ' ').replace('_', ' ').split()
-    effects = []
-    for part in parts:
-        part = part.strip("'\"")
-        if part.isdigit():
-            eid = int(part)
-            if eid in EFFECT_IDS:
-                effects.append(EFFECT_IDS[eid])
-        else:
-            if part in SORTED_EFFECTS:
-                effects.append(part)
-    return effects
-
-def show_progress(processed, queue_size, start_time):
-    elapsed = time.time() - start_time
-    total = processed + queue_size
-    eta = (elapsed / processed) * queue_size if processed > 0 else 0
-    status = f"⏳ Processed: {processed:6d} | Queue: {queue_size:6d} | Elapsed: {elapsed:.1f}s | ETA: {eta:.1f}s"
-    print(f"\r{status}", end='', flush=True)
-
 class PathFinder:
     def __init__(self, rule_engine):
         self.rule_engine = rule_engine
@@ -213,8 +172,6 @@ class PathFinder:
         visited = set()
         queue = deque([(starting_sorted, [])])
         visited.add(tuple(starting_sorted))
-        start_time = time.time()
-        processed = 0
         while queue:
             current_effects, path = queue.popleft()
             if desired_set.issubset(current_effects):
@@ -227,53 +184,40 @@ class PathFinder:
                 if state_key not in visited:
                     visited.add(state_key)
                     queue.append((new_effects, path + [ingredient]))
-            processed += 1
-            if processed % 100 == 0:
-                show_progress(processed, len(queue), start_time)
         return None
 
-def simulate_mixing(starting, path, rule_engine):
-    current = list(starting)
-    steps = []
-    for step, ingredient in enumerate(path, 1):
-        previous = list(current)
-        current = rule_engine.get_transformations(current, ingredient)
-        steps.append({
-            'step': step,
-            'ingredient': ingredient,
-            'previous': previous,
-            'current': current
-        })
-    return steps
+def parse_effects(input_str):
+    effects = []
+    for part in input_str.strip().replace(',', ' ').split():
+        part = part.strip("'\"")
+        if part.isdigit() and int(part) in EFFECT_IDS:
+            effects.append(EFFECT_IDS[int(part)])
+        elif part in SORTED_EFFECTS:
+            effects.append(part)
+    return effects
 
 def main():
-    rule_engine = RuleEngine()
-    path_finder = PathFinder(rule_engine)
-    while True:
-        display_effects()
-        desired_input = input("\n🎯 Desired effects: ")
-        starting_input = input("🧪 Starting effects: ")
-        desired = parse_effects(desired_input)
-        starting = parse_effects(starting_input)
-        if not desired:
-            continue
-        print("\n🚀 Starting search...")
-        path = path_finder.find_shortest_path(desired, starting)
-        if path:
-            print("\n✅ Solution Found!")
-            steps = simulate_mixing(starting or [], path, rule_engine)
-            for step in steps:
-                print(f"\n{'─'*60}")
-                print(f" Step {step['step']:2d}: Add {step['ingredient']}")
-                print(f" Previous: {', '.join(step['previous']) or 'None'}")
-                print(f" Result:   {', '.join(step['current'])} ({len(step['current'])}/{MAX_EFFECTS})")
-            print("\n✅ Final Recipe:")
-            print(" → ".join(path))
-        else:
-            print("\n❌ No solution found under current constraints")
-        response = input("\n🔄 Try another combination? (Y/N or press Enter to continue): ").strip().lower()
-        if response == 'n':
-            break
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--desired', required=True, help='Desired effects (comma-separated)')
+    parser.add_argument('-s', '--starting', default='', help='Starting effects (comma-separated)')
+    parser.add_argument('-l', '--list', action='store_true', help='List available effects')
+    args = parser.parse_args()
+
+    if args.list:
+        for idx, effect in enumerate(SORTED_EFFECTS, 1):
+            print(f"{idx}: {effect}")
+        return
+
+    desired = parse_effects(args.desired)
+    starting = parse_effects(args.starting)
+    if not desired:
+        return print("No valid desired effects")
+
+    path = PathFinder(RuleEngine()).find_shortest_path(desired, starting)
+    if path:
+        print(' → '.join(path))
+    else:
+        print("No solution")
 
 if __name__ == "__main__":
     main()
