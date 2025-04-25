@@ -89,13 +89,13 @@ python main.py -d 23,21,9 -s 11
 pip install -r requirements.txt
 
 # Run all tests
-pytest
+python -m pytest
 
 # Run tests with verbose output
-pytest -v
+python -m pytest -v
 
 # Run specific test file
-pytest tests/test_integration.py
+python -m pytest tests/test_integration.py
 ```
 
 The test suite includes:
