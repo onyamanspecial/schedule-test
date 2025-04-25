@@ -1,0 +1,132 @@
+# Pathfinder
+
+A command-line tool for finding optimal ingredient combinations to achieve desired effects. Uses a breadth-first search algorithm to find the shortest path to desired effects.
+
+## Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/pathfinder.git
+cd pathfinder
+
+# Install dependencies
+pip install -r requirements.txt
+
+# For development (includes testing tools)
+pip install -r requirements.txt[dev]
+```
+
+## Usage
+
+```bash
+python main.py [-h] [-d EFFECTS ...] [-s EFFECTS ...] [-l]
+```
+
+### Options
+
+- `-d, --desired EFFECTS`  : Effects to achieve (required unless using -l)
+- `-s, --starting EFFECTS` : Starting effects (optional)
+- `-l, --list`            : List all available effects with their numbers
+- `-h, --help`            : Show help message
+
+### Input Formats
+
+Effects can be specified in several ways:
+- By number: `1`, `2`, `3` (use `-l` to see numbers)
+- By name: `"Calming"`, `"Anti-gravity"`
+- Multiple effects:
+  ```bash
+  # Space-separated numbers
+  python main.py -d 1 2 3
+
+  # Comma-separated numbers
+  python main.py -d 1,2,3
+
+  # Space-separated names
+  python main.py -d "Calming" "Energizing"
+
+  # Comma-separated names
+  python main.py -d "Calming,Energizing"
+  ```
+
+### Examples
+
+List all available effects:
+```bash
+python main.py -l
+```
+
+Find path to single effect:
+```bash
+# By name
+python main.py -d "Calming"
+
+# By number
+python main.py -d 3
+```
+
+Find path to multiple effects:
+```bash
+# By name
+python main.py -d "Calming" "Energizing"
+
+# By number
+python main.py -d 3,11
+```
+
+Start with existing effects:
+```bash
+python main.py -d "Calming" -s "Energizing"
+```
+
+## Development
+
+### Running Tests
+
+```bash
+# Install development dependencies
+pip install -r requirements.txt
+
+# Run all tests
+pytest
+
+# Run tests with coverage report
+pytest --cov=src
+
+# Run specific test file
+pytest tests/test_parser.py
+```
+
+The test suite includes:
+- Unit tests for effect parsing
+- Unit tests for effect combinations
+- Unit tests for pathfinding
+- Edge cases and error handling
+
+## Project Structure
+
+```
+pathfinder/
+├── data/                 # Data files
+│   ├── effects.yaml      # Available effects and max limit
+│   └── combinations.yaml # Ingredient combinations and their effects
+├── src/                  # Source code
+│   ├── data/            # Data management
+│   │   └── loader.py    # YAML file loading and processing
+│   ├── engine/          # Core algorithms
+│   │   ├── core.py      # Effect combination logic
+│   │   └── pathfinder.py # Path finding algorithm
+│   └── utils/           # Helper functions
+│       └── parser.py    # Command-line argument parsing
+├── tests/               # Test suite
+│   ├── test_parser.py   # Parser unit tests
+│   ├── test_engine.py   # Engine unit tests
+│   └── test_pathfinder.py # Pathfinder unit tests
+├── main.py              # Command-line interface
+└── requirements.txt     # Dependencies
+```
+
+## Requirements
+
+- Python ≥ 3.9
+- PyYAML ≥ 6.0.1 (for reading configuration files) 

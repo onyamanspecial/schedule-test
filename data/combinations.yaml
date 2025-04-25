@@ -1,0 +1,691 @@
+# Combination format:
+#   base: The base ingredient
+#   base_effect: The effect of the base ingredient
+#   modifier: The modifying ingredient
+#   result_effect: The resulting effect
+#   modifier_effect: The effect of the modifier
+
+combinations:
+  - base: Addy
+    base_effect: Thought-Provoking
+    modifier: Flu Medicine
+    result_effect: Gingeritis
+    modifier_effect: Sedating
+
+  - base: Addy
+    base_effect: Thought-Provoking
+    modifier: Horse Semen
+    result_effect: Electrifying
+    modifier_effect: Long faced
+
+  - base: Addy
+    base_effect: Thought-Provoking
+    modifier: Mega Bean
+    result_effect: Energizing
+    modifier_effect: Foggy
+
+  - base: Banana
+    base_effect: Gingeritis
+    modifier: Cuke
+    result_effect: Thought-Provoking
+    modifier_effect: Energizing
+
+  - base: Banana
+    base_effect: Gingeritis
+    modifier: Gasoline
+    result_effect: Smelly
+    modifier_effect: Toxic
+
+  - base: Banana
+    base_effect: Gingeritis
+    modifier: Horse Semen
+    result_effect: Refreshing
+    modifier_effect: Long faced
+
+  - base: Battery
+    base_effect: Bright-Eyed
+    modifier: ""
+    result_effect: ""
+    modifier_effect: ""
+
+  - base: Chili
+    base_effect: Spicy
+    modifier: Energy Drink
+    result_effect: Euphoric
+    modifier_effect: Athletic
+
+  - base: Chili
+    base_effect: Spicy
+    modifier: Paracetamol
+    result_effect: Bright-Eyed
+    modifier_effect: Sneaky
+
+  - base: Cuke
+    base_effect: Energizing
+    modifier: Banana
+    result_effect: Thought-Provoking
+    modifier_effect: Gingeritis
+
+  - base: Cuke
+    base_effect: Energizing
+    modifier: Gasoline
+    result_effect: Euphoric
+    modifier_effect: Toxic
+
+  - base: Cuke
+    base_effect: Energizing
+    modifier: Mega Bean
+    result_effect: Cyclopean
+    modifier_effect: Foggy
+
+  - base: Cuke
+    base_effect: Energizing
+    modifier: Motor Oil
+    result_effect: Munchies
+    modifier_effect: Slippery
+
+  - base: Cuke
+    base_effect: Energizing
+    modifier: Paracetamol
+    result_effect: Paranoia
+    modifier_effect: Sneaky
+
+  - base: Donut
+    base_effect: Calorie-Dense
+    modifier: Iodine
+    result_effect: Gingeritis
+    modifier_effect: Jennerising
+
+  - base: Donut
+    base_effect: Calorie-Dense
+    modifier: Mouth Wash
+    result_effect: Sneaky
+    modifier_effect: Balding
+
+  - base: Energy Drink
+    base_effect: Athletic
+    modifier: Chili
+    result_effect: Euphoric
+    modifier_effect: Spicy
+
+  - base: Energy Drink
+    base_effect: Athletic
+    modifier: Flu Medicine
+    result_effect: Munchies
+    modifier_effect: Sedating
+
+  - base: Energy Drink
+    base_effect: Athletic
+    modifier: Mega Bean
+    result_effect: Laxative
+    modifier_effect: Foggy
+
+  - base: Energy Drink
+    base_effect: Athletic
+    modifier: Viagra
+    result_effect: Sneaky
+    modifier_effect: Tropic Thunder
+
+  - base: Flu Medicine
+    base_effect: Sedating
+    modifier: Addy
+    result_effect: Gingeritis
+    modifier_effect: Thought-Provoking
+
+  - base: Flu Medicine
+    base_effect: Sedating
+    modifier: Energy Drink
+    result_effect: Munchies
+    modifier_effect: Athletic
+
+  - base: Gasoline
+    base_effect: Toxic
+    modifier: Banana
+    result_effect: Smelly
+    modifier_effect: Gingeritis
+
+  - base: Gasoline
+    base_effect: Toxic
+    modifier: Cuke
+    result_effect: Euphoric
+    modifier_effect: Energizing
+
+  - base: Gasoline
+    base_effect: Toxic
+    modifier: Iodine
+    result_effect: Sneaky
+    modifier_effect: Jennerising
+
+  - base: Gasoline
+    base_effect: Toxic
+    modifier: Paracetamol
+    result_effect: Tropic Thunder
+    modifier_effect: Sneaky
+
+  - base: Horse Semen
+    base_effect: Long faced
+    modifier: Addy
+    result_effect: Electrifying
+    modifier_effect: Thought-Provoking
+
+  - base: Horse Semen
+    base_effect: Long faced
+    modifier: Banana
+    result_effect: Refreshing
+    modifier_effect: Gingeritis
+
+  - base: Iodine
+    base_effect: Jennerising
+    modifier: Donut
+    result_effect: Gingeritis
+    modifier_effect: Calorie-Dense
+
+  - base: Iodine
+    base_effect: Jennerising
+    modifier: Gasoline
+    result_effect: Sneaky
+    modifier_effect: Toxic
+
+  - base: Iodine
+    base_effect: Jennerising
+    modifier: Mega Bean
+    result_effect: Paranoia
+    modifier_effect: Foggy
+
+  - base: Mega Bean
+    base_effect: Foggy
+    modifier: Addy
+    result_effect: Energizing
+    modifier_effect: Thought-Provoking
+
+  - base: Mega Bean
+    base_effect: Foggy
+    modifier: Cuke
+    result_effect: Cyclopean
+    modifier_effect: Energizing
+
+  - base: Mega Bean
+    base_effect: Foggy
+    modifier: Energy Drink
+    result_effect: Laxative
+    modifier_effect: Athletic
+
+  - base: Mega Bean
+    base_effect: Foggy
+    modifier: Iodine
+    result_effect: Paranoia
+    modifier_effect: Jennerising
+
+  - base: Mega Bean
+    base_effect: Foggy
+    modifier: Motor Oil
+    result_effect: Toxic
+    modifier_effect: Slippery
+
+  - base: Mega Bean
+    base_effect: Foggy
+    modifier: Paracetamol
+    result_effect: Calming
+    modifier_effect: Sneaky
+
+  - base: Motor Oil
+    base_effect: Slippery
+    modifier: Cuke
+    result_effect: Munchies
+    modifier_effect: Energizing
+
+  - base: Motor Oil
+    base_effect: Slippery
+    modifier: Mega Bean
+    result_effect: Toxic
+    modifier_effect: Foggy
+
+  - base: Mouth Wash
+    base_effect: Balding
+    modifier: Donut
+    result_effect: Sneaky
+    modifier_effect: Calorie-Dense
+
+  - base: Paracetamol
+    base_effect: Sneaky
+    modifier: Chili
+    result_effect: Bright-Eyed
+    modifier_effect: Spicy
+
+  - base: Paracetamol
+    base_effect: Sneaky
+    modifier: Cuke
+    result_effect: Paranoia
+    modifier_effect: Energizing
+
+  - base: Paracetamol
+    base_effect: Sneaky
+    modifier: Gasoline
+    result_effect: Tropic Thunder
+    modifier_effect: Toxic
+
+  - base: Paracetamol
+    base_effect: Sneaky
+    modifier: Mega Bean
+    result_effect: Calming
+    modifier_effect: Foggy
+
+  - base: Viagra
+    base_effect: Tropic Thunder
+    modifier: Energy Drink
+    result_effect: Sneaky
+    modifier_effect: Athletic
+
+  - base: ""
+    base_effect: Calming
+    modifier: Banana
+    result_effect: Sneaky
+    modifier_effect: Gingeritis
+
+  - base: ""
+    base_effect: Calming
+    modifier: Flu Medicine
+    result_effect: Bright-Eyed
+    modifier_effect: Sedating
+
+  - base: ""
+    base_effect: Calming
+    modifier: Iodine
+    result_effect: Balding
+    modifier_effect: Jennerising
+
+  - base: ""
+    base_effect: Calming
+    modifier: Mega Bean
+    result_effect: Glowing
+    modifier_effect: Foggy
+
+  - base: ""
+    base_effect: Calming
+    modifier: Mouth Wash
+    result_effect: Anti-gravity
+    modifier_effect: Balding
+
+  - base: ""
+    base_effect: Calming
+    modifier: Paracetamol
+    result_effect: Slippery
+    modifier_effect: Sneaky
+
+  - base: ""
+    base_effect: Refreshing
+    modifier: Iodine
+    result_effect: Thought-Provoking
+    modifier_effect: Jennerising
+
+  - base: ""
+    base_effect: Energizing
+    modifier: Banana
+    result_effect: Thought-Provoking
+    modifier_effect: Gingeritis
+
+  - base: ""
+    base_effect: Energizing
+    modifier: Gasoline
+    result_effect: Euphoric
+    modifier_effect: Toxic
+
+  - base: ""
+    base_effect: Energizing
+    modifier: Mega Bean
+    result_effect: Cyclopean
+    modifier_effect: Foggy
+
+  - base: ""
+    base_effect: Energizing
+    modifier: Motor Oil
+    result_effect: Munchies
+    modifier_effect: Slippery
+
+  - base: ""
+    base_effect: Energizing
+    modifier: Paracetamol
+    result_effect: Paranoia
+    modifier_effect: Sneaky
+
+  - base: ""
+    base_effect: Sedating
+    modifier: Energy Drink
+    result_effect: Munchies
+    modifier_effect: Athletic
+
+  - base: ""
+    base_effect: Anti-gravity
+    modifier: Chili
+    result_effect: Tropic Thunder
+    modifier_effect: Spicy
+
+  - base: ""
+    base_effect: Anti-gravity
+    modifier: Donut
+    result_effect: Slippery
+    modifier_effect: Calorie-Dense
+
+  - base: ""
+    base_effect: Anti-gravity
+    modifier: Horse Semen
+    result_effect: Calming
+    modifier_effect: Long faced
+
+  - base: ""
+    base_effect: Cyclopean
+    modifier: Banana
+    result_effect: Energizing
+    modifier_effect: Gingeritis
+
+  - base: ""
+    base_effect: Cyclopean
+    modifier: Battery
+    result_effect: Glowing
+    modifier_effect: Bright-Eyed
+
+  - base: ""
+    base_effect: Cyclopean
+    modifier: Flu Medicine
+    result_effect: Foggy
+    modifier_effect: Sedating
+
+  - base: ""
+    base_effect: Disorienting
+    modifier: Banana
+    result_effect: Focused
+    modifier_effect: Gingeritis
+
+  - base: ""
+    base_effect: Disorienting
+    modifier: Energy Drink
+    result_effect: Electrifying
+    modifier_effect: Athletic
+
+  - base: ""
+    base_effect: Disorienting
+    modifier: Gasoline
+    result_effect: Glowing
+    modifier_effect: Toxic
+
+  - base: ""
+    base_effect: Electrifying
+    modifier: Battery
+    result_effect: Euphoric
+    modifier_effect: Bright-Eyed
+
+  - base: ""
+    base_effect: Electrifying
+    modifier: Flu Medicine
+    result_effect: Refreshing
+    modifier_effect: Sedating
+
+  - base: ""
+    base_effect: Electrifying
+    modifier: Gasoline
+    result_effect: Disorienting
+    modifier_effect: Toxic
+
+  - base: ""
+    base_effect: Electrifying
+    modifier: Paracetamol
+    result_effect: Athletic
+    modifier_effect: Sneaky
+
+  - base: ""
+    base_effect: Euphoric
+    modifier: Battery
+    result_effect: Zombifying
+    modifier_effect: Bright-Eyed
+
+  - base: ""
+    base_effect: Euphoric
+    modifier: Energy Drink
+    result_effect: Energizing
+    modifier_effect: Athletic
+
+  - base: ""
+    base_effect: Euphoric
+    modifier: Gasoline
+    result_effect: Spicy
+    modifier_effect: Toxic
+
+  - base: ""
+    base_effect: Euphoric
+    modifier: Iodine
+    result_effect: Seizure-Inducing
+    modifier_effect: Jennerising
+
+  - base: ""
+    base_effect: Euphoric
+    modifier: Motor Oil
+    result_effect: Sedating
+    modifier_effect: Slippery
+
+  - base: ""
+    base_effect: Euphoric
+    modifier: Viagra
+    result_effect: Bright-Eyed
+    modifier_effect: Tropic Thunder
+
+  - base: ""
+    base_effect: Focused
+    modifier: Banana
+    result_effect: Seizure-Inducing
+    modifier_effect: Gingeritis
+
+  - base: ""
+    base_effect: Focused
+    modifier: Donut
+    result_effect: Euphoric
+    modifier_effect: Calorie-Dense
+
+  - base: ""
+    base_effect: Focused
+    modifier: Energy Drink
+    result_effect: Shrinking
+    modifier_effect: Athletic
+
+  - base: ""
+    base_effect: Focused
+    modifier: Flu Medicine
+    result_effect: Bright-Eyed
+    modifier_effect: Sedating
+
+  - base: ""
+    base_effect: Focused
+    modifier: Mega Bean
+    result_effect: Disorienting
+    modifier_effect: Foggy
+
+  - base: ""
+    base_effect: Focused
+    modifier: Mouth Wash
+    result_effect: Jennerising
+    modifier_effect: Balding
+
+  - base: ""
+    base_effect: Glowing
+    modifier: Addy
+    result_effect: Refreshing
+    modifier_effect: Thought-Provoking
+
+  - base: ""
+    base_effect: Glowing
+    modifier: Energy Drink
+    result_effect: Disorienting
+    modifier_effect: Athletic
+
+  - base: ""
+    base_effect: Glowing
+    modifier: Paracetamol
+    result_effect: Toxic
+    modifier_effect: Sneaky
+
+  - base: ""
+    base_effect: Laxative
+    modifier: Battery
+    result_effect: Calorie-Dense
+    modifier_effect: Bright-Eyed
+
+  - base: ""
+    base_effect: Laxative
+    modifier: Chili
+    result_effect: Long faced
+    modifier_effect: Spicy
+
+  - base: ""
+    base_effect: Laxative
+    modifier: Flu Medicine
+    result_effect: Euphoric
+    modifier_effect: Sedating
+
+  - base: ""
+    base_effect: Laxative
+    modifier: Gasoline
+    result_effect: Foggy
+    modifier_effect: Toxic
+
+  - base: ""
+    base_effect: Laxative
+    modifier: Viagra
+    result_effect: Calming
+    modifier_effect: Tropic Thunder
+
+  - base: ""
+    base_effect: Munchies
+    modifier: Battery
+    result_effect: Tropic Thunder
+    modifier_effect: Bright-Eyed
+
+  - base: ""
+    base_effect: Munchies
+    modifier: Chili
+    result_effect: Toxic
+    modifier_effect: Spicy
+
+  - base: ""
+    base_effect: Munchies
+    modifier: Cuke
+    result_effect: Athletic
+    modifier_effect: Energizing
+
+  - base: ""
+    base_effect: Munchies
+    modifier: Donut
+    result_effect: Calming
+    modifier_effect: Calorie-Dense
+
+  - base: ""
+    base_effect: Munchies
+    modifier: Gasoline
+    result_effect: Sedating
+    modifier_effect: Toxic
+
+  - base: ""
+    base_effect: Munchies
+    modifier: Motor Oil
+    result_effect: Schizophrenic
+    modifier_effect: Slippery
+
+  - base: ""
+    base_effect: Munchies
+    modifier: Paracetamol
+    result_effect: Anti-gravity
+    modifier_effect: Sneaky
+
+  - base: ""
+    base_effect: Paranoia
+    modifier: Banana
+    result_effect: Jennerising
+    modifier_effect: Gingeritis
+
+  - base: ""
+    base_effect: Paranoia
+    modifier: Gasoline
+    result_effect: Calming
+    modifier_effect: Toxic
+
+  - base: ""
+    base_effect: Paranoia
+    modifier: Motor Oil
+    result_effect: Anti-gravity
+    modifier_effect: Slippery
+
+  - base: ""
+    base_effect: Paranoia
+    modifier: Paracetamol
+    result_effect: Balding
+    modifier_effect: Sneaky
+
+  - base: ""
+    base_effect: Schizophrenic
+    modifier: Energy Drink
+    result_effect: Balding
+    modifier_effect: Athletic
+
+  - base: ""
+    base_effect: Seizure-Inducing
+    modifier: Horse Semen
+    result_effect: Energizing
+    modifier_effect: Long faced
+
+  - base: ""
+    base_effect: Seizure-Inducing
+    modifier: Mega Bean
+    result_effect: Focused
+    modifier_effect: Foggy
+
+  - base: ""
+    base_effect: Shrinking
+    modifier: Battery
+    result_effect: Munchies
+    modifier_effect: Bright-Eyed
+
+  - base: ""
+    base_effect: Shrinking
+    modifier: Chili
+    result_effect: Refreshing
+    modifier_effect: Spicy
+
+  - base: ""
+    base_effect: Shrinking
+    modifier: Donut
+    result_effect: Energizing
+    modifier_effect: Calorie-Dense
+
+  - base: ""
+    base_effect: Shrinking
+    modifier: Flu Medicine
+    result_effect: Paranoia
+    modifier_effect: Sedating
+
+  - base: ""
+    base_effect: Shrinking
+    modifier: Gasoline
+    result_effect: Focused
+    modifier_effect: Toxic
+
+  - base: ""
+    base_effect: Shrinking
+    modifier: Mega Bean
+    result_effect: Electrifying
+    modifier_effect: Foggy
+
+  - base: ""
+    base_effect: Shrinking
+    modifier: Viagra
+    result_effect: Gingeritis
+    modifier_effect: Tropic Thunder
+
+  - base: ""
+    base_effect: Smelly
+    modifier: Banana
+    result_effect: Anti-gravity
+    modifier_effect: Gingeritis
+
+  - base: Zombifying
+    base_effect: ""
+    modifier: ""
+    result_effect: ""
+    modifier_effect: "" 

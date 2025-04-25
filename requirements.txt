@@ -1,0 +1,11 @@
+# Runtime dependencies
+pyyaml>=6.0.1    # For reading YAML configuration files
+
+# Note: Python >= 3.9 required for built-in type hint support
+
+# Development dependencies
+pytest>=7.0.0    # For running tests
+
+# Optional development tools
+# mypy>=1.0.0    # For static type checking
+# black>=22.0.0  # For code formatting 
