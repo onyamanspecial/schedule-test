@@ -2,8 +2,10 @@ from collections import deque
 from math import floor
 import argparse
 from src.data.loader import load_all_data
+from src.engine.core import Engine
 
-MAX_EFFECTS, _, _, EFFECT_PRIORITY, RULES_DATA, EFFECT_MULTIPLIERS, INGREDIENT_PRICES = load_all_data()
+# Load all required data
+MAX_EFFECTS, EFFECTS, EFFECTS_SORTED, EFFECT_PRIORITIES, RULES_DATA, EFFECT_MULTIPLIERS, INGREDIENT_PRICES = load_all_data()
 
 DRUG_TYPES = ['marijuana', 'meth', 'cocaine']
 MARIJUANA_STRAINS = ['og_kush', 'sour_diesel', 'green_crack', 'granddaddy_purple']
@@ -40,26 +42,8 @@ DRUG_CONFIG = {
 def get_effects_value(effects, base_price):
     return floor(base_price * (1 + sum(EFFECT_MULTIPLIERS.get(e, 0) for e in effects)))
 
-class RuleEngine:
-    def __init__(self):
-        self.ingredient_base = {b:be for b,be,_,_,_ in RULES_DATA if b}
-        self.ingredient_base.update({a:ae for _,_,a,_,ae in RULES_DATA if a})
-        self.effect_transforms = {(be,a):(re,ae) for _,be,a,re,ae in RULES_DATA if be and a}
-    
-    def get_transformations(self, effects, ingredient):
-        new_effects = list(effects)
-        if (ae := self.ingredient_base.get(ingredient)):
-            for i, e in enumerate(new_effects):
-                if (key := (e, ingredient)) in self.effect_transforms:
-                    ne, _ = self.effect_transforms[key]
-                    if ne not in new_effects:
-                        new_effects[i] = ne
-            if ae not in new_effects and len(new_effects) < MAX_EFFECTS:
-                new_effects.append(ae)
-        return sorted(new_effects, key=lambda x: EFFECT_PRIORITY[x])
-
-def find_best_path(rule_engine, base_price, prod_cost, max_depth, initial=None):
-    queue = deque([(0, 0.0, tuple(sorted(initial or [], key=EFFECT_PRIORITY.get)), [])])
+def find_best_path(engine, base_price, prod_cost, max_depth, initial=None):
+    queue = deque([(0, 0.0, tuple(sorted(initial or [], key=lambda x: EFFECT_PRIORITIES[x])), [])])
     visited = {}
     best_profit, best_state = float('-inf'), None
     
@@ -71,8 +55,9 @@ def find_best_path(rule_engine, base_price, prod_cost, max_depth, initial=None):
             best_profit, best_state = profit, (effects, path, cost)
             
         if depth < max_depth:
-            for ing in rule_engine.ingredient_base:
-                new_eff = tuple(rule_engine.get_transformations(list(effects), ing))
+            for ing in engine.base_effects:
+                new_effects = engine.combine(list(effects), ing)
+                new_eff = tuple(new_effects)
                 new_cost = cost + INGREDIENT_PRICES.get(ing, 0)
                 
                 if new_eff not in visited or new_cost < visited[new_eff][0] or profit > visited[new_eff][1]:
@@ -132,8 +117,6 @@ def main():
     cfg = DRUG_CONFIG[drug_type]
     prod_cost, display, effects = 0, '', []
     
-
-    
     # Setup parameters based on drug type
     if drug_type == 'marijuana':
         strain = MARIJUANA_STRAINS[args.strain - 1]
@@ -148,7 +131,9 @@ def main():
         prod_cost = cfg['cost'](cfg['units'](args.grow_tent, args.pgr))
         display = drug_type.capitalize()
 
-    effects, path, cost = find_best_path(RuleEngine(), cfg['base_price'], prod_cost, args.depth, effects)
+    # Initialize the engine with the rules data, max effects, and effect priorities
+    engine = Engine(RULES_DATA, MAX_EFFECTS, EFFECT_PRIORITIES)
+    effects, path, cost = find_best_path(engine, cfg['base_price'], prod_cost, args.depth, effects)
     total = get_effects_value(effects, cfg['base_price'])
     profit = total - (prod_cost + cost)
     
