@@ -27,31 +27,34 @@ def calculate_units(drug_type, grow_tent, pgr):
 
 # Helper function to calculate production cost based on configuration
 def calculate_cost(drug_type, strain=None, quality=None, units=None):
-    cost_config = DRUG_PRICING['cost_calculations'].get(drug_type)
-    if not cost_config:
-        return 0
+    constants = DRUG_PRICING['constants']
+    formula = DRUG_PRICING['cost_calculations'].get(drug_type, {}).get('formula')
     
-    formula = cost_config['formula']
+    if formula == 'soil_and_seed':
+        # Marijuana: (seed_cost + soil_cost_per_seed) / units_per_seed
+        if strain and units:
+            seed_cost = STRAIN_DATA[strain][1]  # Get the base cost of the strain
+            soil_cost_per_seed = constants['plant_soil_cost'] / constants['plant_soil_uses']
+            total_per_seed = seed_cost + soil_cost_per_seed
+            return total_per_seed / units
     
-    if formula == 'strain_based' and strain:
-        strain_cost = STRAIN_DATA[strain][1]
-        additional = cost_config.get('additional_cost', 0)
-        divisor = units if cost_config.get('divisor') == 'units' else 1
-        return (strain_cost + additional) / divisor
+    elif formula == 'batch_based':
+        # Meth: (pseudo_cost + meth_acid_cost + meth_phosphorus_cost) / meth_batch_size
+        if quality is not None:
+            pseudo_cost = QUALITY_COSTS[quality-1]
+            total_batch_cost = pseudo_cost + constants['meth_acid_cost'] + constants['meth_phosphorus_cost']
+            return total_batch_cost / constants['meth_batch_size']
     
-    elif formula == 'quality_based' and quality is not None:
-        quality_cost = QUALITY_COSTS[quality-1]
-        additional = cost_config.get('additional_cost', 0)
-        divisor = cost_config.get('divisor', 1)
-        return (quality_cost + additional) / divisor
+    elif formula == 'seed_and_gasoline':
+        # Cocaine: (seed_cost + soil_cost_per_seed) / units_per_seed + gasoline_cost
+        if units:
+            soil_cost_per_seed = constants['plant_soil_cost'] / constants['plant_soil_uses']
+            seed_cost = constants['cocaine_seed_cost']
+            total_per_seed = seed_cost + soil_cost_per_seed
+            gasoline_cost = INGREDIENT_PRICES['Gasoline'] * constants['gasoline_per_cocaine_unit']
+            return (total_per_seed / units) + gasoline_cost
     
-    elif formula == 'fixed_divisor':
-        numerator = cost_config.get('numerator', 0)
-        divisor = units if cost_config.get('divisor') == 'units' else cost_config.get('divisor', 1)
-        additional = cost_config.get('additional', 0)
-        return numerator / divisor + additional
-    
-    return 0
+    return 0  # Default fallback
 
 def get_effects_value(effects, base_price):
     return floor(base_price * (1 + sum(EFFECT_MULTIPLIERS.get(e, 0) for e in effects)))

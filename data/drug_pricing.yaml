@@ -6,6 +6,16 @@ base_prices:
   meth: 70
   cocaine: 150
 
+# Constants for cost calculations
+constants:
+  plant_soil_cost: 60
+  plant_soil_uses: 3
+  meth_acid_cost: 40
+  meth_phosphorus_cost: 40
+  meth_batch_size: 10
+  cocaine_seed_cost: 150
+  gasoline_per_cocaine_unit: 0.05  # 1/20
+
 # Production unit calculations
 # These are represented as formulas that will be interpreted by the code
 production_units:
@@ -28,15 +38,14 @@ production_units:
 # These are represented as formulas that will be interpreted by the code
 cost_calculations:
   marijuana:
-    formula: "strain_based"
-    additional_cost: 20
-    divisor: "units"
+    formula: "soil_and_seed"
+    # Calculation: (seed_cost + soil_cost_per_seed) / units_per_seed
+    # where soil_cost_per_seed = plant_soil_cost / plant_soil_uses
   meth:
-    formula: "quality_based"
-    additional_cost: 80
-    divisor: 10
+    formula: "batch_based"
+    # Calculation: (pseudo_cost + meth_acid_cost + meth_phosphorus_cost) / meth_batch_size
   cocaine:
-    formula: "fixed_divisor"
-    numerator: 170
-    divisor: "units"
-    additional: 0.25
+    formula: "seed_and_gasoline"
+    # Calculation: (seed_cost + soil_cost_per_seed) / units_per_seed + gasoline_cost
+    # where soil_cost_per_seed = plant_soil_cost / plant_soil_uses
+    # and gasoline_cost = gasoline_price * gasoline_per_cocaine_unit
