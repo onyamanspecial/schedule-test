@@ -14,6 +14,26 @@ def load_effects_data() -> Tuple[int, List[str]]:
         data = yaml.safe_load(f)
     return int(data['max_effects']), list(data['effects'])
 
+def load_effect_multipliers() -> Dict[str, float]:
+    """Load effect multipliers from YAML file.
+    
+    Returns:
+        Dictionary mapping effect names to their value multipliers
+    """
+    with open(Path('data/effect_multipliers.yaml'), 'r') as f:
+        data = yaml.safe_load(f)
+    return dict(data['effect_multipliers'])
+
+def load_ingredient_prices() -> Dict[str, int]:
+    """Load ingredient prices from YAML file.
+    
+    Returns:
+        Dictionary mapping ingredient names to their prices
+    """
+    with open(Path('data/ingredient_prices.yaml'), 'r') as f:
+        data = yaml.safe_load(f)
+    return dict(data['ingredient_prices'])
+
 def load_combinations_data() -> List[Tuple[str, str, str, str, str]]:
     """Load ingredient combinations and their effects from YAML file.
     
@@ -42,7 +62,7 @@ def get_effect_priorities(effects: List[str]) -> Dict[str, int]:
     """
     return {effect: idx for idx, effect in enumerate(effects)}
 
-def load_all_data() -> Tuple[int, List[str], List[str], Dict[str, int], List[Tuple[str, str, str, str, str]]]:
+def load_all_data() -> Tuple[int, List[str], List[str], Dict[str, int], List[Tuple[str, str, str, str, str]], Dict[str, float], Dict[str, int]]:
     """Load and process all required data.
     
     Returns:
@@ -52,6 +72,8 @@ def load_all_data() -> Tuple[int, List[str], List[str], Dict[str, int], List[Tup
         - Sorted list of effects
         - Effect priority mapping
         - List of ingredient combinations
+        - Effect multipliers dictionary
+        - Ingredient prices dictionary
     """
     # Load base data
     max_effects, effects = load_effects_data()
@@ -63,4 +85,8 @@ def load_all_data() -> Tuple[int, List[str], List[str], Dict[str, int], List[Tup
     # Load combinations
     combinations = load_combinations_data()
     
-    return max_effects, effects, effects_sorted, effect_priorities, combinations 
+    # Load multipliers and prices
+    effect_multipliers = load_effect_multipliers()
+    ingredient_prices = load_ingredient_prices()
+    
+    return max_effects, effects, effects_sorted, effect_priorities, combinations, effect_multipliers, ingredient_prices

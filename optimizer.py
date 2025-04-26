@@ -1,174 +1,34 @@
 from collections import deque
 from math import floor
-import argparse, json
+import argparse
+from src.data.loader import load_all_data
 
-MAX_EFFECTS = 8
+MAX_EFFECTS, _, _, EFFECT_PRIORITY, RULES_DATA, EFFECT_MULTIPLIERS, INGREDIENT_PRICES = load_all_data()
 
-PRIORITY_ORDER = [
-    'Paranoia', 'Smelly', 'Calming', 'Munchies', 'Refreshing', 'Focused',
-    'Euphoric', 'Toxic', 'Disorienting', 'Gingeritis', 'Energizing', 'Sedating',
-    'Seizure-Inducing', 'Laxative', 'Balding', 'Calorie-Dense', 'Sneaky',
-    'Athletic', 'Slippery', 'Foggy', 'Spicy', 'Jennerising', 'Schizophrenic',
-    'Bright-Eyed', 'Thought-Provoking', 'Tropic Thunder', 'Electrifying',
-    'Glowing', 'Long faced', 'Anti-gravity', 'Cyclopean', 'Zombifying', 'Shrinking'
-]
+DRUG_TYPES = ['marijuana', 'meth', 'cocaine']
+MARIJUANA_STRAINS = ['og_kush', 'sour_diesel', 'green_crack', 'granddaddy_purple']
+METH_QUALITIES = [1, 2, 3]
 
-EFFECT_PRIORITY = {e: i for i, e in enumerate(PRIORITY_ORDER)}
-
-RULES_DATA = [
-    ("Addy", "Thought-Provoking", "Flu Medicine", "Gingeritis", "Sedating"),
-    ("Addy", "Thought-Provoking", "Horse Semen", "Electrifying", "Long faced"),
-    ("Addy", "Thought-Provoking", "Mega Bean", "Energizing", "Foggy"),
-    ("Banana", "Gingeritis", "Cuke", "Thought-Provoking", "Energizing"),
-    ("Banana", "Gingeritis", "Gasoline", "Smelly", "Toxic"),
-    ("Banana", "Gingeritis", "Horse Semen", "Refreshing", "Long faced"),
-    ("Battery", "Bright-Eyed", "", "", ""),
-    ("Chili", "Spicy", "Energy Drink", "Euphoric", "Athletic"),
-    ("Chili", "Spicy", "Paracetamol", "Bright-Eyed", "Sneaky"),
-    ("Cuke", "Energizing", "Banana", "Thought-Provoking", "Gingeritis"),
-    ("Cuke", "Energizing", "Gasoline", "Euphoric", "Toxic"),
-    ("Cuke", "Energizing", "Mega Bean", "Cyclopean", "Foggy"),
-    ("Cuke", "Energizing", "Motor Oil", "Munchies", "Slippery"),
-    ("Cuke", "Energizing", "Paracetamol", "Paranoia", "Sneaky"),
-    ("Donut", "Calorie-Dense", "Iodine", "Gingeritis", "Jennerising"),
-    ("Donut", "Calorie-Dense", "Mouth Wash", "Sneaky", "Balding"),
-    ("Energy Drink", "Athletic", "Chili", "Euphoric", "Spicy"),
-    ("Energy Drink", "Athletic", "Flu Medicine", "Munchies", "Sedating"),
-    ("Energy Drink", "Athletic", "Mega Bean", "Laxative", "Foggy"),
-    ("Energy Drink", "Athletic", "Viagra", "Sneaky", "Tropic Thunder"),
-    ("Flu Medicine", "Sedating", "Addy", "Gingeritis", "Thought-Provoking"),
-    ("Flu Medicine", "Sedating", "Energy Drink", "Munchies", "Athletic"),
-    ("Gasoline", "Toxic", "Banana", "Smelly", "Gingeritis"),
-    ("Gasoline", "Toxic", "Cuke", "Euphoric", "Energizing"),
-    ("Gasoline", "Toxic", "Iodine", "Sneaky", "Jennerising"),
-    ("Gasoline", "Toxic", "Paracetamol", "Tropic Thunder", "Sneaky"),
-    ("Horse Semen", "Long faced", "Addy", "Electrifying", "Thought-Provoking"),
-    ("Horse Semen", "Long faced", "Banana", "Refreshing", "Gingeritis"),
-    ("Iodine", "Jennerising", "Donut", "Gingeritis", "Calorie-Dense"),
-    ("Iodine", "Jennerising", "Gasoline", "Sneaky", "Toxic"),
-    ("Iodine", "Jennerising", "Mega Bean", "Paranoia", "Foggy"),
-    ("Mega Bean", "Foggy", "Addy", "Energizing", "Thought-Provoking"),
-    ("Mega Bean", "Foggy", "Cuke", "Cyclopean", "Energizing"),
-    ("Mega Bean", "Foggy", "Energy Drink", "Laxative", "Athletic"),
-    ("Mega Bean", "Foggy", "Iodine", "Paranoia", "Jennerising"),
-    ("Mega Bean", "Foggy", "Motor Oil", "Toxic", "Slippery"),
-    ("Mega Bean", "Foggy", "Paracetamol", "Calming", "Sneaky"),
-    ("Motor Oil", "Slippery", "Cuke", "Munchies", "Energizing"),
-    ("Motor Oil", "Slippery", "Mega Bean", "Toxic", "Foggy"),
-    ("Mouth Wash", "Balding", "Donut", "Sneaky", "Calorie-Dense"),
-    ("Paracetamol", "Sneaky", "Chili", "Bright-Eyed", "Spicy"),
-    ("Paracetamol", "Sneaky", "Cuke", "Paranoia", "Energizing"),
-    ("Paracetamol", "Sneaky", "Gasoline", "Tropic Thunder", "Toxic"),
-    ("Paracetamol", "Sneaky", "Mega Bean", "Calming", "Foggy"),
-    ("Viagra", "Tropic Thunder", "Energy Drink", "Sneaky", "Athletic"),
-    ("", "Calming", "Banana", "Sneaky", "Gingeritis"),
-    ("", "Calming", "Flu Medicine", "Bright-Eyed", "Sedating"),
-    ("", "Calming", "Iodine", "Balding", "Jennerising"),
-    ("", "Calming", "Mega Bean", "Glowing", "Foggy"),
-    ("", "Calming", "Mouth Wash", "Anti-gravity", "Balding"),
-    ("", "Calming", "Paracetamol", "Slippery", "Sneaky"),
-    ("", "Refreshing", "Iodine", "Thought-Provoking", "Jennerising"),
-    ("", "Energizing", "Banana", "Thought-Provoking", "Gingeritis"),
-    ("", "Energizing", "Gasoline", "Euphoric", "Toxic"),
-    ("", "Energizing", "Mega Bean", "Cyclopean", "Foggy"),
-    ("", "Energizing", "Motor Oil", "Munchies", "Slippery"),
-    ("", "Energizing", "Paracetamol", "Paranoia", "Sneaky"),
-    ("", "Sedating", "Energy Drink", "Munchies", "Athletic"),
-    ("", "Anti-gravity", "Chili", "Tropic Thunder", "Spicy"),
-    ("", "Anti-gravity", "Donut", "Slippery", "Calorie-Dense"),
-    ("", "Anti-gravity", "Horse Semen", "Calming", "Long faced"),
-    ("", "Cyclopean", "Banana", "Energizing", "Gingeritis"),
-    ("", "Cyclopean", "Battery", "Glowing", "Bright-Eyed"),
-    ("", "Cyclopean", "Flu Medicine", "Foggy", "Sedating"),
-    ("", "Disorienting", "Banana", "Focused", "Gingeritis"),
-    ("", "Disorienting", "Energy Drink", "Electrifying", "Athletic"),
-    ("", "Disorienting", "Gasoline", "Glowing", "Toxic"),
-    ("", "Electrifying", "Battery", "Euphoric", "Bright-Eyed"),
-    ("", "Electrifying", "Flu Medicine", "Refreshing", "Sedating"),
-    ("", "Electrifying", "Gasoline", "Disorienting", "Toxic"),
-    ("", "Electrifying", "Paracetamol", "Athletic", "Sneaky"),
-    ("", "Euphoric", "Battery", "Zombifying", "Bright-Eyed"),
-    ("", "Euphoric", "Energy Drink", "Energizing", "Athletic"),
-    ("", "Euphoric", "Gasoline", "Spicy", "Toxic"),
-    ("", "Euphoric", "Iodine", "Seizure-Inducing", "Jennerising"),
-    ("", "Euphoric", "Motor Oil", "Sedating", "Slippery"),
-    ("", "Euphoric", "Viagra", "Bright-Eyed", "Tropic Thunder"),
-    ("", "Focused", "Banana", "Seizure-Inducing", "Gingeritis"),
-    ("", "Focused", "Donut", "Euphoric", "Calorie-Dense"),
-    ("", "Focused", "Energy Drink", "Shrinking", "Athletic"),
-    ("", "Focused", "Flu Medicine", "Bright-Eyed", "Sedating"),
-    ("", "Focused", "Mega Bean", "Disorienting", "Foggy"),
-    ("", "Focused", "Mouth Wash", "Jennerising", "Balding"),
-    ("", "Glowing", "Addy", "Refreshing", "Thought-Provoking"),
-    ("", "Glowing", "Energy Drink", "Disorienting", "Athletic"),
-    ("", "Glowing", "Paracetamol", "Toxic", "Sneaky"),
-    ("", "Laxative", "Battery", "Calorie-Dense", "Bright-Eyed"),
-    ("", "Laxative", "Chili", "Long faced", "Spicy"),
-    ("", "Laxative", "Flu Medicine", "Euphoric", "Sedating"),
-    ("", "Laxative", "Gasoline", "Foggy", "Toxic"),
-    ("", "Laxative", "Viagra", "Calming", "Tropic Thunder"),
-    ("", "Munchies", "Battery", "Tropic Thunder", "Bright-Eyed"),
-    ("", "Munchies", "Chili", "Toxic", "Spicy"),
-    ("", "Munchies", "Cuke", "Athletic", "Energizing"),
-    ("", "Munchies", "Donut", "Calming", "Calorie-Dense"),
-    ("", "Munchies", "Gasoline", "Sedating", "Toxic"),
-    ("", "Munchies", "Motor Oil", "Schizophrenic", "Slippery"),
-    ("", "Munchies", "Paracetamol", "Anti-gravity", "Sneaky"),
-    ("", "Paranoia", "Banana", "Jennerising", "Gingeritis"),
-    ("", "Paranoia", "Gasoline", "Calming", "Toxic"),
-    ("", "Paranoia", "Motor Oil", "Anti-gravity", "Slippery"),
-    ("", "Paranoia", "Paracetamol", "Balding", "Sneaky"),
-    ("", "Schizophrenic", "Energy Drink", "Balding", "Athletic"),
-    ("", "Seizure-Inducing", "Horse Semen", "Energizing", "Long faced"),
-    ("", "Seizure-Inducing", "Mega Bean", "Focused", "Foggy"),
-    ("", "Shrinking", "Battery", "Munchies", "Bright-Eyed"),
-    ("", "Shrinking", "Chili", "Refreshing", "Spicy"),
-    ("", "Shrinking", "Donut", "Energizing", "Calorie-Dense"),
-    ("", "Shrinking", "Flu Medicine", "Paranoia", "Sedating"),
-    ("", "Shrinking", "Gasoline", "Focused", "Toxic"),
-    ("", "Shrinking", "Mega Bean", "Electrifying", "Foggy"),
-    ("", "Shrinking", "Viagra", "Gingeritis", "Tropic Thunder"),
-    ("", "Smelly", "Banana", "Anti-gravity", "Gingeritis"),
-    ("Zombifying", "", "", "", "")
-]
-
-INGREDIENT_PRICES = {
-    'Addy': 9, 'Banana': 2, 'Battery': 8, 'Chili': 7, 'Cuke': 2, 'Donut': 3,
-    'Energy Drink': 6, 'Flu Medicine': 5, 'Gasoline': 5, 'Horse Semen': 9,
-    'Iodine': 9, 'Mega Bean': 7, 'Motor Oil': 6, 'Mouth Wash': 4,
-    'Paracetamol': 3, 'Viagra': 4
+STRAIN_DATA = {
+    'og_kush': ('Calming', 30),
+    'sour_diesel': ('Refreshing', 35),
+    'green_crack': ('Energizing', 40),
+    'granddaddy_purple': ('Sedating', 45)
 }
 
-EFFECT_MULTIPLIERS = {
-    'Anti-gravity': 0.54, 'Athletic': 0.32, 'Balding': 0.30, 'Bright-Eyed': 0.40,
-    'Calming': 0.10, 'Calorie-Dense': 0.28, 'Cyclopean': 0.56, 'Disorienting': 0.00,
-    'Electrifying': 0.50, 'Energizing': 0.22, 'Euphoric': 0.18, 'Focused': 0.16,
-    'Foggy': 0.36, 'Gingeritis': 0.20, 'Glowing': 0.48, 'Jennerising': 0.42,
-    'Laxative': 0.00, 'Long faced': 0.52, 'Munchies': 0.12, 'Paranoia': 0.00,
-    'Refreshing': 0.14, 'Schizophrenic': 0.00, 'Sedating': 0.26, 'Seizure-Inducing': 0.00,
-    'Shrinking': 0.60, 'Slippery': 0.34, 'Smelly': 0.00, 'Sneaky': 0.24,
-    'Spicy': 0.38, 'Thought-Provoking': 0.44, 'Toxic': 0.00, 'Tropic Thunder': 0.46,
-    'Zombifying': 0.58
-}
+QUALITY_NAMES = ['Low-Quality Pseudo', 'Pseudo', 'High-Quality Pseudo']
+QUALITY_COSTS = [60, 80, 110]
 
 DRUG_CONFIG = {
     'marijuana': {
         'base_price': 35,
-        'strains': {
-            'og_kush': ('Calming', 30), 'sour_diesel': ('Refreshing', 35),
-            'green_crack': ('Energizing', 40), 'granddaddy_purple': ('Sedating', 45)
-        },
+        'strains': STRAIN_DATA,
         'units': lambda a,b: 12 if (a and b) else 8 if a else 16 if b else 12,
-        'cost': lambda s, u: (DRUG_CONFIG['marijuana']['strains'][s][1] + 20) / u
+        'cost': lambda s, u: (STRAIN_DATA[s][1] + 20) / u
     },
     'meth': {
         'base_price': 70,
-        'qualities': {
-            'low': ('Low-Quality Pseudo', 60),
-            'medium': ('Pseudo', 80),
-            'high': ('High-Quality Pseudo', 110)
-        },
-        'cost': lambda q: (DRUG_CONFIG['meth']['qualities'][q][1] + 80) / 10
+        'cost': lambda q: (QUALITY_COSTS[q-1] + 80) / 10
     },
     'cocaine': {
         'base_price': 150,
@@ -199,72 +59,107 @@ class RuleEngine:
         return sorted(new_effects, key=lambda x: EFFECT_PRIORITY[x])
 
 def find_best_path(rule_engine, base_price, prod_cost, max_depth, initial=None):
-    visited, queue = {}, deque([(0, 0.0, tuple(sorted(initial or [], key=EFFECT_PRIORITY.get)), [])])
+    queue = deque([(0, 0.0, tuple(sorted(initial or [], key=EFFECT_PRIORITY.get)), [])])
+    visited = {}
     best_profit, best_state = float('-inf'), None
     
     while queue:
         depth, cost, effects, path = queue.popleft()
         profit = get_effects_value(effects, base_price) - (prod_cost + cost)
+        
         if profit > best_profit:
             best_profit, best_state = profit, (effects, path, cost)
+            
         if depth < max_depth:
             for ing in rule_engine.ingredient_base:
                 new_eff = tuple(rule_engine.get_transformations(list(effects), ing))
                 new_cost = cost + INGREDIENT_PRICES.get(ing, 0)
+                
                 if new_eff not in visited or new_cost < visited[new_eff][0] or profit > visited[new_eff][1]:
                     visited[new_eff] = (new_cost, profit)
                     queue.append((depth+1, new_cost, new_eff, path+[ing]))
+                    
     return best_state
 
 def main():
-    parser = argparse.ArgumentParser(description='Drug Optimizer')
-    parser.add_argument('drug_type', choices=DRUG_CONFIG.keys())
-    parser.add_argument('--depth', type=int, default=3)
-    parser.add_argument('--grow-tent', action='store_true')
-    parser.add_argument('--pgr', action='store_true')
-    parser.add_argument('--strain', choices=DRUG_CONFIG['marijuana']['strains'])
-    parser.add_argument('--quality', choices=DRUG_CONFIG['meth']['qualities'])
-    parser.add_argument('--json', action='store_true')
+    def fmt_choices(items):
+        return " | ".join(f"{i+1}={item}" for i, item in enumerate(items))
+    
+    class CapitalizationHelpFormatter(argparse.HelpFormatter):
+        def __init__(self, prog):
+            super().__init__(prog, max_help_position=40, width=80)
+            
+        def _format_action(self, action):
+            if action.help and not action.help[0].isupper():
+                action.help = action.help[0].upper() + action.help[1:]
+            return super()._format_action(action)
+            
+        def _join_parts(self, part_strings):
+            for i, part in enumerate(part_strings):
+                if part.startswith('usage:'):
+                    part_strings[i] = 'Usage:' + part[6:]
+                elif part.startswith('positional arguments'):
+                    part_strings[i] = 'Positional Arguments:\n' + part.split('\n', 1)[1]
+                elif part.startswith('options'):
+                    part_strings[i] = 'Options:\n' + part.split('\n', 1)[1]
+            return super()._join_parts(part_strings)
+    
+    parser = argparse.ArgumentParser(
+        description='Drug Optimizer',
+        formatter_class=CapitalizationHelpFormatter)
+    
+    parser.add_argument('drug_type', type=int, choices=range(1, len(DRUG_TYPES) + 1),
+                        help=f'Drug type: {fmt_choices(DRUG_TYPES)}')
+    
+    prod = parser.add_argument_group('Production')
+    prod.add_argument('-d', '--depth', type=int, default=3, metavar='N',
+                      help='Search depth (default: 3)')
+    prod.add_argument('-g', '--grow-tent', action='store_true', help='Use grow tent')
+    prod.add_argument('-p', '--pgr', action='store_true', help='Use plant growth regulators')
+    
+    m_opts = parser.add_argument_group('Marijuana')
+    m_opts.add_argument('-s', '--strain', type=int, choices=range(1, len(MARIJUANA_STRAINS) + 1),
+                        default=1, help=f'Strain: {fmt_choices(MARIJUANA_STRAINS)} (default: 1)')
+    
+    me_opts = parser.add_argument_group('Meth')
+    me_opts.add_argument('-q', '--quality', type=int, choices=range(1, 4),
+                         default=3, help='Quality: 1=low | 2=medium | 3=high (default: 3)')
+    
     args = parser.parse_args()
-
-    cfg = DRUG_CONFIG[args.drug_type]
+    
+    # Process drug type and prepare configuration
+    drug_type = DRUG_TYPES[args.drug_type - 1]
+    cfg = DRUG_CONFIG[drug_type]
     prod_cost, display, effects = 0, '', []
     
-    if args.drug_type == 'marijuana':
-        effect = cfg['strains'][args.strain][0]
-        prod_cost = cfg['cost'](args.strain, cfg['units'](args.grow_tent, args.pgr))
-        display, effects = args.strain, [effect]
-    elif args.drug_type == 'meth':
-        prod_cost = cfg['cost'](args.quality)
-        display = cfg['qualities'][args.quality][0]
-    else:
+
+    
+    # Setup parameters based on drug type
+    if drug_type == 'marijuana':
+        strain = MARIJUANA_STRAINS[args.strain - 1]
+        effect = cfg['strains'][strain][0]
+        prod_cost = cfg['cost'](strain, cfg['units'](args.grow_tent, args.pgr))
+        display, effects = strain, [effect]
+    elif drug_type == 'meth':
+        quality = args.quality
+        prod_cost = cfg['cost'](quality)
+        display = QUALITY_NAMES[quality-1]
+    else:  # cocaine
         prod_cost = cfg['cost'](cfg['units'](args.grow_tent, args.pgr))
-        display = args.drug_type.capitalize()
+        display = drug_type.capitalize()
 
     effects, path, cost = find_best_path(RuleEngine(), cfg['base_price'], prod_cost, args.depth, effects)
     total = get_effects_value(effects, cfg['base_price'])
     profit = total - (prod_cost + cost)
     
-    if args.json:
-        print(json.dumps({
-            'drug_type': args.drug_type,
-            'subtype': display,
-            'production_cost': round(prod_cost, 2),
-            'ingredients': {'count': len(path), 'cost': round(cost, 2), 'list': path},
-            'total_cost': round(prod_cost + cost, 2),
-            'total_value': total,
-            'profit': round(profit, 2),
-            'effects': [{'name': e, 'multiplier': round(EFFECT_MULTIPLIERS[e],2)} for e in effects]
-        }, indent=2))
-    else:
-        print(f"\nBest Combination for {args.drug_type} ({display})")
-        print(f"Production Cost: ${prod_cost:.2f}")
-        print(f"Ingredients ({len(path)}): ${cost:.2f}")
-        print(f"Total Cost: ${prod_cost + cost:.2f}")
-        print(f"Total Value: ${total}")
-        print(f"Profit: ${profit:.2f}")
-        print("\nEffects:" + ''.join(f"\n- {e} (x{EFFECT_MULTIPLIERS[e]:.2f})" for e in effects))
-        if path: print("\nRecipe: " + " → ".join(path))
+    print(f"\nBest Combination for {drug_type} ({display})")
+    print(f"Production Cost: ${prod_cost:.2f}")
+    print(f"Ingredients ({len(path)}): ${cost:.2f}")
+    print(f"Total Cost: ${prod_cost + cost:.2f}")
+    print(f"Total Value: ${total}")
+    print(f"Profit: ${profit:.2f}")
+    print("\nEffects:" + ''.join(f"\n- {e} (x{EFFECT_MULTIPLIERS[e]:.2f})" for e in effects))
+    if path: print("\nRecipe: " + " → ".join(path))
 
 if __name__ == "__main__":
     main()

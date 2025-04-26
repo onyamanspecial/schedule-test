@@ -1,0 +1,19 @@
+# Prices for ingredients used in drug combinations
+
+ingredient_prices:
+  Addy: 9
+  Banana: 2
+  Battery: 8
+  Chili: 7
+  Cuke: 2
+  Donut: 3
+  Energy Drink: 6
+  Flu Medicine: 5
+  Gasoline: 5
+  Horse Semen: 9
+  Iodine: 9
+  Mega Bean: 7
+  Motor Oil: 6
+  Mouth Wash: 4
+  Paracetamol: 3
+  Viagra: 4
