@@ -35,9 +35,9 @@ def main():
     # Create subparsers for different modes
     subparsers = parser.add_subparsers(dest='mode', help='Operation mode')
     
-    # Pathfinder mode
+    # Pathfinder mode (Mode 1)
     path_parser = subparsers.add_parser(
-        'path', 
+        '1', 
         help='Find a path to desired effects',
         description='Find a sequence of ingredients to achieve desired effects'
     )
@@ -48,7 +48,7 @@ def main():
     path_parser.add_argument('-l', '--list', action='store_true',
                        help='List all available effects with their numbers')
     
-    # Optimizer mode
+    # Optimizer mode (Mode 2)
     optimize_parser = setup_optimizer_parser(subparsers)
     
     # Parse arguments
@@ -56,10 +56,11 @@ def main():
     
     # Handle different modes
     if not args.mode:
-        # Default to path mode if no mode specified
-        args.mode = 'path'
+        # Show help when no mode is specified
+        parser.print_help()
+        return
         
-    if args.mode == 'path':
+    if args.mode == '1':
         # Pathfinder mode
         if args.list:
             # List all effects
@@ -79,7 +80,7 @@ def main():
             else:
                 print("No solution")
     
-    elif args.mode == 'optimize':
+    elif args.mode == '2':
         # Optimizer mode
         run_optimizer(args, data)
 

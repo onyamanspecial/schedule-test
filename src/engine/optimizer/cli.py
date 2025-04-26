@@ -44,14 +44,14 @@ def setup_optimizer_parser(subparsers):
     """
     # Create the optimizer subparser
     parser = subparsers.add_parser(
-        'optimize', 
+        '2', 
         help='Find the most profitable drug recipe',
         description='Drug Optimizer - Find the most profitable combination of ingredients',
         formatter_class=CapitalizationHelpFormatter
     )
     
-    # Add drug type argument
-    parser.add_argument('drug_type', type=int, metavar='DRUG_TYPE',
+    # Add drug type as a flag instead of positional argument
+    parser.add_argument('-t', '--type', type=int, required=True, metavar='N',
                         help='Drug type (1=marijuana, 2=meth, 3=cocaine)')
     
     # Production options
@@ -99,12 +99,12 @@ def run_optimizer(args, data):
     drug_pricing = data['drug_pricing']
     
     # Validate drug type
-    if args.drug_type < 1 or args.drug_type > len(drug_types):
+    if args.type < 1 or args.type > len(drug_types):
         print(f"Error: Invalid drug type. Must be between 1 and {len(drug_types)}")
         return
     
     # Process drug type and prepare configuration
-    drug_type = drug_types[args.drug_type - 1]
+    drug_type = drug_types[args.type - 1]
     base_price = drug_pricing['base_prices'][drug_type]
     constants = drug_pricing['constants']
     cost_formula = drug_pricing['cost_calculations'].get(drug_type, {}).get('formula', '')
