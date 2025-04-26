@@ -2,7 +2,8 @@ from collections import deque
 from math import floor
 from typing import Dict, List, Tuple, Optional, Any
 
-def get_effects_value(effects: List[str], base_price: int, effect_multipliers: Dict[str, float]) -> int:
+
+def get_effects_value(effects: List[str], base_price: float, effect_multipliers: Dict[str, float]) -> int:
     """Calculate the value of a drug based on its effects and base price.
     
     Args:
@@ -15,29 +16,30 @@ def get_effects_value(effects: List[str], base_price: int, effect_multipliers: D
     """
     return floor(base_price * (1 + sum(effect_multipliers.get(e, 0) for e in effects)))
 
-def find_best_path(engine, base_price: int, prod_cost: float, max_depth: int, 
-                  effect_priorities: Dict[str, int], ingredient_prices: Dict[str, int],
-                  effect_multipliers: Dict[str, float], initial: Optional[List[str]] = None) -> Tuple[Tuple[str, ...], List[str], float]:
+
+def find_best_path(engine, base_price: float, prod_cost: float, max_depth: int, 
+                  effect_multipliers: Dict[str, float], ingredient_prices: Dict[str, int],
+                  effect_priorities: Dict[str, int], initial: Optional[List[str]] = None) -> Tuple[List[str], List[str], float]:
     """Find the most profitable combination of ingredients.
     
-    Uses a breadth-first search algorithm to find the combination of ingredients
-    that will result in the highest profit.
+    Uses a breadth-first search algorithm to find the most profitable combination
+    of ingredients that maximizes the value of the drug.
     
     Args:
         engine: Engine instance containing combination rules
         base_price: Base price of the drug
         prod_cost: Production cost per unit
-        max_depth: Maximum number of ingredients to add
-        effect_priorities: Dictionary mapping effects to their sort priorities
-        ingredient_prices: Dictionary mapping ingredients to their prices
+        max_depth: Maximum search depth (number of ingredients to add)
         effect_multipliers: Dictionary mapping effects to their value multipliers
+        ingredient_prices: Dictionary mapping ingredients to their prices
+        effect_priorities: Dictionary mapping effects to their sort priorities
         initial: Optional list of effects to start with
         
     Returns:
         Tuple containing:
-        - Tuple of final effects
+        - List of effects in the optimal combination
         - List of ingredients to combine in sequence
-        - Total cost of ingredients
+        - Total cost of the ingredients
     """
     queue = deque([(0, 0.0, tuple(sorted(initial or [], key=lambda x: effect_priorities[x])), [])])
     visited = {}
@@ -62,15 +64,15 @@ def find_best_path(engine, base_price: int, prod_cost: float, max_depth: int,
                     
     return best_state
 
-# Helper function to calculate production units based on configuration
+
 def calculate_units(drug_type: str, grow_tent: bool, pgr: bool, production_units: Dict[str, Any]) -> int:
-    """Calculate the number of units produced based on production configuration.
+    """Calculate production units based on configuration.
     
     Args:
         drug_type: Type of drug being produced
         grow_tent: Whether a grow tent is being used
         pgr: Whether plant growth regulators are being used
-        production_units: Production units configuration dictionary
+        production_units: Dictionary containing production unit configurations
         
     Returns:
         Number of units produced
@@ -90,47 +92,46 @@ def calculate_units(drug_type: str, grow_tent: bool, pgr: bool, production_units
             return value
     return 1  # Default fallback
 
-# Helper function to calculate production cost based on configuration
-def calculate_cost(drug_type: str, constants: Dict[str, Any], cost_calculations: Dict[str, Any],
-                  strain_data: Dict[str, Tuple[str, int]], quality_costs: List[int],
-                  ingredient_prices: Dict[str, int], strain: Optional[str] = None, 
-                  quality: Optional[int] = None, units: Optional[int] = None) -> float:
-    """Calculate the production cost of a drug.
+
+def calculate_cost(drug_type: str, constants: Dict[str, Any], cost_formula: str, 
+                  strain: Optional[str] = None, quality: Optional[int] = None, 
+                  units: Optional[int] = None, strain_data: Optional[Dict[str, Tuple[str, int]]] = None,
+                  quality_costs: Optional[List[int]] = None, 
+                  ingredient_prices: Optional[Dict[str, int]] = None) -> float:
+    """Calculate production cost based on configuration.
     
     Args:
         drug_type: Type of drug being produced
-        constants: Dictionary of constant values for calculations
-        cost_calculations: Cost calculation formulas configuration
-        strain_data: Dictionary mapping marijuana strains to their effects and costs
+        constants: Dictionary containing constants for calculations
+        cost_formula: Formula to use for calculation
+        strain: Selected marijuana strain
+        quality: Selected meth quality
+        units: Number of units produced
+        strain_data: Dictionary mapping strains to their effects and costs
         quality_costs: List of costs for different meth qualities
         ingredient_prices: Dictionary mapping ingredients to their prices
-        strain: Optional strain of marijuana
-        quality: Optional quality level of meth
-        units: Optional number of units produced
         
     Returns:
         Production cost per unit
     """
-    formula = cost_calculations.get(drug_type, {}).get('formula')
-    
-    if formula == 'soil_and_seed':
+    if cost_formula == 'soil_and_seed':
         # Marijuana: (seed_cost + soil_cost_per_seed) / units_per_seed
-        if strain and units:
+        if strain and units and strain_data:
             seed_cost = strain_data[strain][1]  # Get the base cost of the strain
             soil_cost_per_seed = constants['plant_soil_cost'] / constants['plant_soil_uses']
             total_per_seed = seed_cost + soil_cost_per_seed
             return total_per_seed / units
     
-    elif formula == 'batch_based':
+    elif cost_formula == 'batch_based':
         # Meth: (pseudo_cost + meth_acid_cost + meth_phosphorus_cost) / meth_batch_size
-        if quality is not None:
+        if quality is not None and quality_costs:
             pseudo_cost = quality_costs[quality-1]
             total_batch_cost = pseudo_cost + constants['meth_acid_cost'] + constants['meth_phosphorus_cost']
             return total_batch_cost / constants['meth_batch_size']
     
-    elif formula == 'seed_and_gasoline':
+    elif cost_formula == 'seed_and_gasoline':
         # Cocaine: (seed_cost + soil_cost_per_seed) / units_per_seed + gasoline_cost
-        if units:
+        if units and ingredient_prices:
             soil_cost_per_seed = constants['plant_soil_cost'] / constants['plant_soil_uses']
             seed_cost = constants['cocaine_seed_cost']
             total_per_seed = seed_cost + soil_cost_per_seed

@@ -1,7 +1,7 @@
 import argparse
 from typing import Dict, List, Tuple, Any
 from src.engine.core import Engine
-from src.engine.optimizer.core import (
+from src.engine.optimizer import (
     calculate_units, calculate_cost, find_best_path, get_effects_value
 )
 
