@@ -62,7 +62,44 @@ def get_effect_priorities(effects: List[str]) -> Dict[str, int]:
     """
     return {effect: idx for idx, effect in enumerate(effects)}
 
-def load_all_data() -> Tuple[int, List[str], List[str], Dict[str, int], List[Tuple[str, str, str, str, str]], Dict[str, float], Dict[str, int]]:
+def load_drug_types_data():
+    """Load drug types configuration from YAML file.
+    
+    Returns:
+        Tuple containing:
+        - List of drug types
+        - Dictionary of marijuana strains with their effects and costs
+        - List of meth qualities
+        - List of quality names
+        - List of quality costs
+    """
+    with open(Path('data/drug_types.yaml'), 'r') as f:
+        data = yaml.safe_load(f)
+    
+    # Extract marijuana strains into a dictionary with tuples (effect, cost)
+    strains_data = {}
+    for strain, info in data['marijuana_strains'].items():
+        strains_data[strain] = (info['effect'], info['base_cost'])
+    
+    return (
+        data['drug_types'],
+        strains_data,
+        data['meth_qualities'],
+        data['quality_names'],
+        data['quality_costs']
+    )
+
+def load_drug_pricing_data():
+    """Load drug pricing configuration from YAML file.
+    
+    Returns:
+        Dictionary containing drug pricing configuration
+    """
+    with open(Path('data/drug_pricing.yaml'), 'r') as f:
+        data = yaml.safe_load(f)
+    return data
+
+def load_all_data() -> Tuple[int, List[str], List[str], Dict[str, int], List[Tuple[str, str, str, str, str]], Dict[str, float], Dict[str, int], List[str], Dict[str, Tuple[str, int]], List[int], List[str], List[int], Dict]:
     """Load and process all required data.
     
     Returns:
@@ -74,6 +111,12 @@ def load_all_data() -> Tuple[int, List[str], List[str], Dict[str, int], List[Tup
         - List of ingredient combinations
         - Effect multipliers dictionary
         - Ingredient prices dictionary
+        - List of drug types
+        - Dictionary of marijuana strains
+        - List of meth qualities
+        - List of quality names
+        - List of quality costs
+        - Drug pricing configuration
     """
     # Load base data
     max_effects, effects = load_effects_data()
@@ -89,4 +132,8 @@ def load_all_data() -> Tuple[int, List[str], List[str], Dict[str, int], List[Tup
     effect_multipliers = load_effect_multipliers()
     ingredient_prices = load_ingredient_prices()
     
-    return max_effects, effects, effects_sorted, effect_priorities, combinations, effect_multipliers, ingredient_prices
+    # Load drug types and pricing
+    drug_types, strain_data, meth_qualities, quality_names, quality_costs = load_drug_types_data()
+    drug_pricing = load_drug_pricing_data()
+    
+    return max_effects, effects, effects_sorted, effect_priorities, combinations, effect_multipliers, ingredient_prices, drug_types, strain_data, meth_qualities, quality_names, quality_costs, drug_pricing

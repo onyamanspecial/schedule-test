@@ -1,0 +1,39 @@
+# Drug types configuration
+
+# List of available drug types
+drug_types:
+  - marijuana
+  - meth
+  - cocaine
+
+# Marijuana strains with their effects and base costs
+marijuana_strains:
+  og_kush:
+    effect: Calming
+    base_cost: 30
+  sour_diesel:
+    effect: Refreshing
+    base_cost: 35
+  green_crack:
+    effect: Energizing
+    base_cost: 40
+  granddaddy_purple:
+    effect: Sedating
+    base_cost: 45
+
+# Meth quality levels
+meth_qualities:
+  - 1
+  - 2
+  - 3
+
+# Quality names and costs
+quality_names:
+  - Low-Quality Pseudo
+  - Pseudo
+  - High-Quality Pseudo
+
+quality_costs:
+  - 60
+  - 80
+  - 110

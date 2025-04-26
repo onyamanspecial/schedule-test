@@ -5,39 +5,53 @@ from src.data.loader import load_all_data
 from src.engine.core import Engine
 
 # Load all required data
-MAX_EFFECTS, EFFECTS, EFFECTS_SORTED, EFFECT_PRIORITIES, RULES_DATA, EFFECT_MULTIPLIERS, INGREDIENT_PRICES = load_all_data()
+MAX_EFFECTS, EFFECTS, EFFECTS_SORTED, EFFECT_PRIORITIES, RULES_DATA, EFFECT_MULTIPLIERS, INGREDIENT_PRICES, \
+DRUG_TYPES, STRAIN_DATA, METH_QUALITIES, QUALITY_NAMES, QUALITY_COSTS, DRUG_PRICING = load_all_data()
 
-DRUG_TYPES = ['marijuana', 'meth', 'cocaine']
-MARIJUANA_STRAINS = ['og_kush', 'sour_diesel', 'green_crack', 'granddaddy_purple']
-METH_QUALITIES = [1, 2, 3]
+# Helper function to calculate production units based on configuration
+def calculate_units(drug_type, grow_tent, pgr):
+    unit_config = DRUG_PRICING['production_units'].get(drug_type)
+    if not unit_config or unit_config['formula'] != 'conditional':
+        return 1  # Default fallback
+    
+    for condition, value in unit_config['conditions']:
+        if condition == 'grow_tent and pgr' and grow_tent and pgr:
+            return value
+        elif condition == 'grow_tent' and grow_tent:
+            return value
+        elif condition == 'pgr' and pgr:
+            return value
+        elif condition == 'default':
+            return value
+    return 1  # Default fallback
 
-STRAIN_DATA = {
-    'og_kush': ('Calming', 30),
-    'sour_diesel': ('Refreshing', 35),
-    'green_crack': ('Energizing', 40),
-    'granddaddy_purple': ('Sedating', 45)
-}
-
-QUALITY_NAMES = ['Low-Quality Pseudo', 'Pseudo', 'High-Quality Pseudo']
-QUALITY_COSTS = [60, 80, 110]
-
-DRUG_CONFIG = {
-    'marijuana': {
-        'base_price': 35,
-        'strains': STRAIN_DATA,
-        'units': lambda a,b: 12 if (a and b) else 8 if a else 16 if b else 12,
-        'cost': lambda s, u: (STRAIN_DATA[s][1] + 20) / u
-    },
-    'meth': {
-        'base_price': 70,
-        'cost': lambda q: (QUALITY_COSTS[q-1] + 80) / 10
-    },
-    'cocaine': {
-        'base_price': 150,
-        'units': lambda a,b: 11 if (a and b) else 6 if a else 16 if b else 9,
-        'cost': lambda u: 170/u + 0.25
-    }
-}
+# Helper function to calculate production cost based on configuration
+def calculate_cost(drug_type, strain=None, quality=None, units=None):
+    cost_config = DRUG_PRICING['cost_calculations'].get(drug_type)
+    if not cost_config:
+        return 0
+    
+    formula = cost_config['formula']
+    
+    if formula == 'strain_based' and strain:
+        strain_cost = STRAIN_DATA[strain][1]
+        additional = cost_config.get('additional_cost', 0)
+        divisor = units if cost_config.get('divisor') == 'units' else 1
+        return (strain_cost + additional) / divisor
+    
+    elif formula == 'quality_based' and quality is not None:
+        quality_cost = QUALITY_COSTS[quality-1]
+        additional = cost_config.get('additional_cost', 0)
+        divisor = cost_config.get('divisor', 1)
+        return (quality_cost + additional) / divisor
+    
+    elif formula == 'fixed_divisor':
+        numerator = cost_config.get('numerator', 0)
+        divisor = units if cost_config.get('divisor') == 'units' else cost_config.get('divisor', 1)
+        additional = cost_config.get('additional', 0)
+        return numerator / divisor + additional
+    
+    return 0
 
 def get_effects_value(effects, base_price):
     return floor(base_price * (1 + sum(EFFECT_MULTIPLIERS.get(e, 0) for e in effects)))
@@ -103,8 +117,8 @@ def main():
     prod.add_argument('-p', '--pgr', action='store_true', help='Use plant growth regulators')
     
     m_opts = parser.add_argument_group('Marijuana')
-    m_opts.add_argument('-s', '--strain', type=int, choices=range(1, len(MARIJUANA_STRAINS) + 1),
-                        default=1, help=f'Strain: {fmt_choices(MARIJUANA_STRAINS)} (default: 1)')
+    m_opts.add_argument('-s', '--strain', type=int, choices=range(1, len(list(STRAIN_DATA.keys())) + 1),
+                        default=1, help=f'Strain: {fmt_choices(list(STRAIN_DATA.keys()))} (default: 1)')
     
     me_opts = parser.add_argument_group('Meth')
     me_opts.add_argument('-q', '--quality', type=int, choices=range(1, 4),
@@ -114,27 +128,30 @@ def main():
     
     # Process drug type and prepare configuration
     drug_type = DRUG_TYPES[args.drug_type - 1]
-    cfg = DRUG_CONFIG[drug_type]
+    base_price = DRUG_PRICING['base_prices'][drug_type]
     prod_cost, display, effects = 0, '', []
     
     # Setup parameters based on drug type
     if drug_type == 'marijuana':
-        strain = MARIJUANA_STRAINS[args.strain - 1]
-        effect = cfg['strains'][strain][0]
-        prod_cost = cfg['cost'](strain, cfg['units'](args.grow_tent, args.pgr))
+        strain_list = list(STRAIN_DATA.keys())
+        strain = strain_list[args.strain - 1]
+        effect = STRAIN_DATA[strain][0]
+        units = calculate_units(drug_type, args.grow_tent, args.pgr)
+        prod_cost = calculate_cost(drug_type, strain=strain, units=units)
         display, effects = strain, [effect]
     elif drug_type == 'meth':
         quality = args.quality
-        prod_cost = cfg['cost'](quality)
+        prod_cost = calculate_cost(drug_type, quality=quality)
         display = QUALITY_NAMES[quality-1]
     else:  # cocaine
-        prod_cost = cfg['cost'](cfg['units'](args.grow_tent, args.pgr))
+        units = calculate_units(drug_type, args.grow_tent, args.pgr)
+        prod_cost = calculate_cost(drug_type, units=units)
         display = drug_type.capitalize()
 
     # Initialize the engine with the rules data, max effects, and effect priorities
     engine = Engine(RULES_DATA, MAX_EFFECTS, EFFECT_PRIORITIES)
-    effects, path, cost = find_best_path(engine, cfg['base_price'], prod_cost, args.depth, effects)
-    total = get_effects_value(effects, cfg['base_price'])
+    effects, path, cost = find_best_path(engine, base_price, prod_cost, args.depth, effects)
+    total = get_effects_value(effects, base_price)
     profit = total - (prod_cost + cost)
     
     print(f"\nBest Combination for {drug_type} ({display})")

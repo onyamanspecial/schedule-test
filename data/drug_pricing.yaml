@@ -1,0 +1,42 @@
+# Drug pricing and configuration data
+
+# Base drug prices
+base_prices:
+  marijuana: 35
+  meth: 70
+  cocaine: 150
+
+# Production unit calculations
+# These are represented as formulas that will be interpreted by the code
+production_units:
+  marijuana:
+    formula: "conditional"
+    conditions:
+      - ["grow_tent and pgr", 12]
+      - ["grow_tent", 8]
+      - ["pgr", 16]
+      - ["default", 12]
+  cocaine:
+    formula: "conditional"
+    conditions:
+      - ["grow_tent and pgr", 11]
+      - ["grow_tent", 6]
+      - ["pgr", 16]
+      - ["default", 9]
+
+# Cost calculation formulas
+# These are represented as formulas that will be interpreted by the code
+cost_calculations:
+  marijuana:
+    formula: "strain_based"
+    additional_cost: 20
+    divisor: "units"
+  meth:
+    formula: "quality_based"
+    additional_cost: 80
+    divisor: 10
+  cocaine:
+    formula: "fixed_divisor"
+    numerator: 170
+    divisor: "units"
+    additional: 0.25
