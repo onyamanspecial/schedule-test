@@ -5,26 +5,6 @@ from src.engine.pathfinder import find_path
 from src.utils.parser import parse_effects
 
 
-def setup_pathfinder_parser(parser):
-    """Set up the command-line parser for the pathfinder mode.
-    
-    Args:
-        parser: The main argument parser
-        
-    Returns:
-        The updated parser with pathfinder arguments
-    """
-    # Add pathfinder arguments
-    parser.add_argument('-d', '--desired', metavar='EFFECTS', nargs='+',
-                       help='Specify effects to achieve (names or numbers, comma-separated or space-separated)')
-    parser.add_argument('-s', '--starting', metavar='EFFECTS', nargs='*', default=[],
-                       help='Start with these effects (optional, comma-separated or space-separated)')
-    parser.add_argument('-l', '--list', action='store_true',
-                       help='List all available effects with their numbers')
-    
-    return parser
-
-
 def run_pathfinder(args, data):
     """Run the pathfinder with the given arguments and data.
     

@@ -33,15 +33,23 @@ class CapitalizationHelpFormatter(argparse.HelpFormatter):
         return super()._join_parts(part_strings)
 
 
-def setup_optimizer_parser(parser):
+def setup_optimizer_parser(subparsers):
     """Set up the command-line parser for the optimizer mode.
     
     Args:
-        parser: The main argument parser
+        subparsers: Subparsers object from the main parser
         
     Returns:
-        The updated parser with optimizer arguments
+        The created subparser for the optimizer mode
     """
+    # Create the optimizer subparser
+    parser = subparsers.add_parser(
+        '2', 
+        help='Find the most profitable drug recipe',
+        description='Drug Optimizer - Find the most profitable combination of ingredients',
+        formatter_class=CapitalizationHelpFormatter
+    )
+    
     # Add drug type as a flag
     parser.add_argument('-t', '--type', type=int, required=True, metavar='N',
                         help='Drug type (1=marijuana, 2=meth, 3=cocaine)')

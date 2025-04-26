@@ -9,7 +9,7 @@ as well as optimizing drug recipes for maximum profit.
 
 import argparse
 from src.data.loader import load_all_data
-from src.cli.pathfinder_cli import setup_pathfinder_parser, run_pathfinder
+from src.cli.pathfinder_cli import run_pathfinder
 from src.cli.optimizer_cli import setup_optimizer_parser, run_optimizer, CapitalizationHelpFormatter
 
 def main():
@@ -30,38 +30,41 @@ def main():
         description='Pathfinder - Find optimal ingredient combinations and drug recipes',
     )
     
-    # Add mode flag
-    parser.add_argument('-m', '--mode', type=int, choices=[1, 2], required=True,
-                      help='Operation mode: 1=pathfinder, 2=optimizer')
+    # Create subparsers for different modes
+    subparsers = parser.add_subparsers(dest='mode', help='Operation mode')
     
-    # Parse known args first to get the mode
-    args, remaining = parser.parse_known_args()
+    # Pathfinder mode (Mode 1)
+    path_parser = subparsers.add_parser(
+        '1', 
+        help='Find a path to desired effects',
+        description='Find a sequence of ingredients to achieve desired effects',
+        formatter_class=CapitalizationHelpFormatter
+    )
+    path_parser.add_argument('-d', '--desired', metavar='EFFECTS', nargs='+',
+                       help='Specify effects to achieve (names or numbers, comma-separated or space-separated)')
+    path_parser.add_argument('-s', '--starting', metavar='EFFECTS', nargs='*', default=[],
+                       help='Start with these effects (optional, comma-separated or space-separated)')
+    path_parser.add_argument('-l', '--list', action='store_true',
+                       help='List all available effects with their numbers')
     
-    # Reset parser for the selected mode
-    if args.mode == 1:
-        # Pathfinder mode
-        parser = argparse.ArgumentParser(
-            formatter_class=CapitalizationHelpFormatter,
-            description='Pathfinder - Find a sequence of ingredients to achieve desired effects',
-        )
-        parser.add_argument('-m', '--mode', type=int, choices=[1], default=1, help=argparse.SUPPRESS)
-        setup_pathfinder_parser(parser)
-    else:  # args.mode == 2
-        # Optimizer mode
-        parser = argparse.ArgumentParser(
-            formatter_class=CapitalizationHelpFormatter,
-            description='Drug Optimizer - Find the most profitable combination of ingredients',
-        )
-        parser.add_argument('-m', '--mode', type=int, choices=[2], default=2, help=argparse.SUPPRESS)
-        setup_optimizer_parser(parser)
+    # Optimizer mode (Mode 2)
+    optimize_parser = setup_optimizer_parser(subparsers)
     
-    # Parse all arguments
+    # Parse arguments
     args = parser.parse_args()
     
-    # Run the selected mode
-    if args.mode == 1:
+    # Handle different modes
+    if not args.mode:
+        # Show help when no mode is specified
+        parser.print_help()
+        return
+        
+    if args.mode == '1':
+        # Pathfinder mode
         run_pathfinder(args, data)
-    else:  # args.mode == 2
+    
+    elif args.mode == '2':
+        # Optimizer mode
         run_optimizer(args, data)
 
 if __name__ == "__main__":
