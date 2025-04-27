@@ -1,5 +1,8 @@
 # Runtime dependencies
 pyyaml>=6.0.1    # For reading YAML configuration files
+click>=8.0.0     # For modern CLI interface
+sphinx>=4.0.0    # For documentation generation
+sphinx-rtd-theme>=1.0.0  # Documentation theme
 
 # Note: Python >= 3.9 required for built-in type hint support
 
@@ -8,4 +11,4 @@ pytest>=7.0.0    # For running tests
 
 # Optional development tools
 # mypy>=1.0.0    # For static type checking
-# black>=22.0.0  # For code formatting 
+# black>=22.0.0  # For code formatting
