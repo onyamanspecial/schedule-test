@@ -76,95 +76,203 @@ def setup_optimizer_parser(subparsers):
     return parser
 
 
-def run_optimizer(args, data):
-    """Run the optimizer with the given arguments and data.
+def setup_marijuana_options(args, data: Dict[str, Any]) -> Tuple[List[str], Dict[str, Any]]:
+    """Set up marijuana-specific options for optimization.
     
     Args:
-        args: Parsed command-line arguments
+        args: Command-line arguments
         data: Dictionary containing all loaded data
         
     Returns:
-        None, prints results to stdout
+        Tuple containing:
+        - List of initial effects
+        - Dictionary of options for cost calculation
     """
-    # Extract data
-    max_effects = data['max_effects']
-    effect_priorities = data['effect_priorities']
-    rules_data = data['combinations']
-    effect_multipliers = data['effect_multipliers']
-    ingredient_prices = data['ingredient_prices']
-    drug_types = data['drug_types']
-    strain_data = data['strain_data']
-    quality_names = data['quality_names']
-    quality_costs = data['quality_costs']
-    drug_pricing = data['drug_pricing']
+    # Get strain information
+    strain_index = args.strain - 1
+    strains = list(data['strain_data'].keys())
+    strain = strains[strain_index]
     
-    # Validate drug type
-    if args.type < 1 or args.type > len(drug_types):
-        print(f"Error: Invalid drug type. Must be between 1 and {len(drug_types)}")
-        return
+    # Get initial effect from strain
+    initial_effects = [data['strain_data'][strain][0]]
     
-    # Process drug type and prepare configuration
-    drug_type = drug_types[args.type - 1]
-    base_price = drug_pricing['base_prices'][drug_type]
-    constants = drug_pricing['constants']
-    cost_formula = drug_pricing['cost_calculations'].get(drug_type, {}).get('formula', '')
-    prod_cost, display, effects = 0, '', []
+    # Set up options for cost calculation
+    options = {
+        'strain': strain,
+        'grow_tent': args.grow_tent,
+        'pgr': args.pgr
+    }
     
-    # Setup parameters based on drug type
-    if drug_type == 'marijuana':
-        strain_list = list(strain_data.keys())
-        if args.strain < 1 or args.strain > len(strain_list):
-            print(f"Error: Invalid strain. Must be between 1 and {len(strain_list)}")
-            return
-            
-        strain = strain_list[args.strain - 1]
-        effect = strain_data[strain][0]
-        units = calculate_units(drug_type, args.grow_tent, args.pgr, drug_pricing['production_units'])
-        prod_cost = calculate_cost(
-            drug_type, constants, cost_formula, 
-            strain=strain, units=units, strain_data=strain_data, 
-            ingredient_prices=ingredient_prices
-        )
-        display, effects = strain, [effect]
-    
-    elif drug_type == 'meth':
-        quality = args.quality
-        prod_cost = calculate_cost(
-            drug_type, constants, cost_formula, 
-            quality=quality, quality_costs=quality_costs
-        )
-        display = quality_names[quality-1]
-    
-    else:  # cocaine
-        units = calculate_units(drug_type, args.grow_tent, args.pgr, drug_pricing['production_units'])
-        prod_cost = calculate_cost(
-            drug_type, constants, cost_formula, 
-            units=units, ingredient_prices=ingredient_prices
-        )
-        display = drug_type.capitalize()
+    return initial_effects, options
 
-    # Initialize the engine and find the best path
-    engine = Engine(rules_data, max_effects, effect_priorities)
-    result = find_best_path(
-        engine, base_price, prod_cost, args.depth, 
-        effect_multipliers, ingredient_prices, effect_priorities, effects
+
+def setup_meth_options(args, data: Dict[str, Any]) -> Tuple[List[str], Dict[str, Any]]:
+    """Set up meth-specific options for optimization.
+    
+    Args:
+        args: Command-line arguments
+        data: Dictionary containing all loaded data
+        
+    Returns:
+        Tuple containing:
+        - List of initial effects (empty for meth)
+        - Dictionary of options for cost calculation
+    """
+    # Meth has no initial effects
+    initial_effects = []
+    
+    # Set up options for cost calculation
+    options = {
+        'quality': args.quality,
+        'grow_tent': args.grow_tent,
+        'pgr': args.pgr
+    }
+    
+    return initial_effects, options
+
+
+def setup_cocaine_options(args, data: Dict[str, Any]) -> Tuple[List[str], Dict[str, Any]]:
+    """Set up cocaine-specific options for optimization.
+    
+    Args:
+        args: Command-line arguments
+        data: Dictionary containing all loaded data
+        
+    Returns:
+        Tuple containing:
+        - List of initial effects (empty for cocaine)
+        - Dictionary of options for cost calculation
+    """
+    # Cocaine has no initial effects
+    initial_effects = []
+    
+    # Set up options for cost calculation
+    options = {
+        'grow_tent': args.grow_tent,
+        'pgr': args.pgr
+    }
+    
+    return initial_effects, options
+
+
+def calculate_drug_cost(drug_type: str, options: Dict[str, Any], data: Dict[str, Any]) -> float:
+    """Calculate the production cost for a drug.
+    
+    Args:
+        drug_type: Type of drug being produced
+        options: Dictionary of options for cost calculation
+        data: Dictionary containing all loaded data
+        
+    Returns:
+        Production cost per unit
+    """
+    # Get common parameters
+    constants = data['drug_pricing']['constants']
+    cost_formula = data['drug_pricing']['cost_calculations'][drug_type]['formula']
+    
+    # Calculate units based on grow tent and pgr options
+    units = calculate_units(
+        drug_type, 
+        options.get('grow_tent', False), 
+        options.get('pgr', False), 
+        data['drug_pricing']['production_units']
     )
     
-    if not result:
-        print(f"No profitable combination found for {drug_type}")
-        return
-        
-    effects, path, cost = result
-    total = get_effects_value(effects, base_price, effect_multipliers)
-    profit = total - (prod_cost + cost)
+    # Set up keyword arguments based on drug type
+    kwargs = {'units': units}
     
-    # Display results
-    print(f"\nBest Combination for {drug_type} ({display})")
+    if drug_type == 'marijuana':
+        kwargs.update({
+            'strain': options.get('strain', 'og_kush'),
+            'strain_data': data['strain_data']
+        })
+    elif drug_type == 'meth':
+        kwargs.update({
+            'quality': options.get('quality', 3),
+            'quality_costs': data['quality_costs']
+        })
+    elif drug_type == 'cocaine':
+        kwargs.update({
+            'ingredient_prices': data['ingredient_prices']
+        })
+    
+    # Calculate the production cost
+    return calculate_cost(drug_type, constants, cost_formula, **kwargs)
+
+
+def print_optimization_results(drug_type: str, effects: List[str], path: List[str], 
+                              ingredient_cost: float, prod_cost: float, base_price: float,
+                              effect_multipliers: Dict[str, float]) -> None:
+    """Print the results of the optimization.
+    
+    Args:
+        drug_type: Type of drug being produced
+        effects: List of effects in the optimal combination
+        path: List of ingredients in the optimal combination
+        ingredient_cost: Cost of the ingredients
+        prod_cost: Production cost per unit
+        base_price: Base price of the drug
+        effect_multipliers: Dictionary mapping effects to their value multipliers
+    """
+    from src.engine.optimizer import get_effects_value
+    
+    # Calculate value and profit
+    total_value = get_effects_value(effects, base_price, effect_multipliers)
+    total_cost = prod_cost + ingredient_cost
+    profit = total_value - total_cost
+    
+    # Print the results
+    print(f"\nBest Combination for {drug_type}:")
     print(f"Production Cost: ${prod_cost:.2f}")
-    print(f"Ingredients ({len(path)}): ${cost:.2f}")
-    print(f"Total Cost: ${prod_cost + cost:.2f}")
-    print(f"Total Value: ${total}")
+    print(f"Ingredients: {', '.join(path)}")
+    print(f"Ingredient Cost: ${ingredient_cost:.2f}")
+    print(f"Total Cost: ${total_cost:.2f}")
+    print(f"Total Value: ${total_value:.2f}")
     print(f"Profit: ${profit:.2f}")
-    print("\nEffects:" + ''.join(f"\n- {e} (x{effect_multipliers[e]:.2f})" for e in effects))
-    if path: 
-        print("\nRecipe: " + " → ".join(path))
+    print(f"Effects: {', '.join(effects)}")
+    print(f"Recipe: {' → '.join(path)}")
+
+
+def run_optimizer(args, data: Dict[str, Any]) -> None:
+    """Run the optimizer with the given arguments.
+    
+    Args:
+        args: Command-line arguments
+        data: Dictionary containing all loaded data
+    """
+    # Map numeric drug type to string
+    drug_types = data['drug_types']
+    drug_type = drug_types[args.type - 1]
+    
+    # Set up drug-specific options
+    if drug_type == 'marijuana':
+        initial_effects, options = setup_marijuana_options(args, data)
+    elif drug_type == 'meth':
+        initial_effects, options = setup_meth_options(args, data)
+    else:  # cocaine
+        initial_effects, options = setup_cocaine_options(args, data)
+    
+    # Calculate production cost
+    prod_cost = calculate_drug_cost(drug_type, options, data)
+    
+    # Get base price for the drug
+    base_price = data['drug_pricing']['base_prices'][drug_type]
+    
+    # Create engine
+    engine = Engine(data['combinations'], data['max_effects'], data['effect_priorities'])
+    
+    # Find the best path
+    result = find_best_path(
+        engine, base_price, prod_cost, args.depth,
+        data['effect_multipliers'], data['ingredient_prices'], data['effect_priorities'],
+        initial_effects
+    )
+    
+    if result:
+        effects, path, ingredient_cost = result
+        print_optimization_results(
+            drug_type, effects, path, ingredient_cost, 
+            prod_cost, base_price, data['effect_multipliers']
+        )
+    else:
+        print(f"No profitable combination found for {drug_type} with depth {args.depth}")

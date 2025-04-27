@@ -7,12 +7,8 @@ from src.utils.parser import parse_effects
 @pytest.fixture
 def engine():
     """Create an engine instance with actual data files."""
-    # Unpack only the values we need for pathfinder tests
-    data = {}
-    (
-        data['max_effects'], data['effects'], data['effects_sorted'], 
-        data['effect_priorities'], data['combinations'], *_ 
-    ) = load_all_data()
+    # Get data directly as a dictionary
+    data = load_all_data()
     
     return (
         Engine(data['combinations'], data['max_effects'], data['effect_priorities']),

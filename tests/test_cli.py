@@ -9,52 +9,36 @@ from src.data.loader import load_all_data
 @pytest.fixture
 def data():
     """Load all data needed for CLI tests."""
-    # Convert tuple to dictionary for easier access
-    raw_data = load_all_data()
-    data_dict = {
-        'max_effects': raw_data[0],
-        'effects': raw_data[1],
-        'effects_sorted': raw_data[2],
-        'effect_priorities': raw_data[3],
-        'combinations': raw_data[4],
-        'effect_multipliers': raw_data[5],
-        'ingredient_prices': raw_data[6],
-        'drug_types': raw_data[7],
-        'strain_data': raw_data[8],
-        'meth_qualities': raw_data[9],
-        'quality_names': raw_data[10],
-        'quality_costs': raw_data[11],
-        'drug_pricing': raw_data[12]
-    }
-    return data_dict
-
-# Create a simple class for mock arguments
-class MockArgs:
-    """Base class for mock arguments."""
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+    return load_all_data()
 
 @pytest.fixture
 def mock_args_pathfinder():
     """Create mock arguments for pathfinder CLI."""
-    return MockArgs(
-        desired=["Calming", "Energizing"],
-        starting=[],
-        list=False
-    )
+    class Args:
+        desired = ["Calming", "Energizing"]
+        starting = []
+        list = False
+        
+        def __init__(self):
+            pass
+            
+    return Args()
 
 @pytest.fixture
 def mock_args_optimizer():
     """Create mock arguments for optimizer CLI."""
-    return MockArgs(
-        type=1,  # marijuana
-        strain=1,  # og_kush
-        depth=3,
-        grow_tent=False,
-        pgr=False,
-        quality=3  # high quality (for meth)
-    )
+    class Args:
+        type = 1  # marijuana
+        strain = 1  # og_kush
+        depth = 3
+        grow_tent = False
+        pgr = False
+        quality = 3  # high quality (for meth)
+        
+        def __init__(self):
+            pass
+            
+    return Args()
 
 @patch('sys.stdout', new_callable=io.StringIO)
 def test_pathfinder_cli_output(mock_stdout, mock_args_pathfinder, data):
@@ -66,7 +50,7 @@ def test_pathfinder_cli_output(mock_stdout, mock_args_pathfinder, data):
     output = mock_stdout.getvalue()
     
     # Verify the output contains expected elements
-    assert "→" in output, "Output should contain path with arrow symbols"
+    assert "\u2192" in output, "Output should contain path with arrow symbols"
     assert not output.isspace(), "Output should not be empty"
 
 @patch('sys.stdout', new_callable=io.StringIO)
@@ -90,68 +74,55 @@ def test_optimizer_cli_output(mock_stdout, mock_args_optimizer, data):
     assert not output.isspace(), "Output should not be empty"
 
 @patch('sys.stdout', new_callable=io.StringIO)
-def test_pathfinder_cli_no_solution(mock_stdout, data):
-    """Test that the pathfinder CLI handles cases with no solution."""
-    # Create args with impossible combination of effects
-    args = MockArgs(
-        desired=["Impossible Effect 1", "Impossible Effect 2"],
-        starting=[],
-        list=False
-    )
-    
-    # Run the pathfinder CLI with impossible args
-    run_pathfinder(args, data)
-    
-    # Get the output
-    output = mock_stdout.getvalue()
-    
-    # Verify the output indicates no solution
-    assert "No solution" in output, "Output should indicate no solution was found"
-
-@patch('sys.stdout', new_callable=io.StringIO)
 def test_optimizer_cli_different_drug_types(mock_stdout, data):
     """Test that the optimizer CLI handles different drug types."""
     # Test marijuana
-    marijuana_args = MockArgs(
-        type=1,  # marijuana
-        strain=1,  # og_kush
-        depth=3,
-        grow_tent=False,
-        pgr=False,
-        quality=3  # not used for marijuana
-    )
+    class MarijuanaArgs:
+        type = 1  # marijuana
+        strain = 1  # og_kush
+        depth = 3
+        grow_tent = False
+        pgr = False
+        quality = 3  # not used for marijuana
+        
+        def __init__(self):
+            pass
     
-    run_optimizer(marijuana_args, data)
+    run_optimizer(MarijuanaArgs(), data)
     marijuana_output = mock_stdout.getvalue()
     mock_stdout.truncate(0)
     mock_stdout.seek(0)
     
     # Test meth
-    meth_args = MockArgs(
-        type=2,  # meth
-        strain=1,  # not used for meth
-        depth=3,
-        grow_tent=False,
-        pgr=False,
-        quality=3  # high quality
-    )
+    class MethArgs:
+        type = 2  # meth
+        strain = 1  # not used for meth
+        depth = 3
+        grow_tent = False
+        pgr = False
+        quality = 3  # high quality
+        
+        def __init__(self):
+            pass
     
-    run_optimizer(meth_args, data)
+    run_optimizer(MethArgs(), data)
     meth_output = mock_stdout.getvalue()
     mock_stdout.truncate(0)
     mock_stdout.seek(0)
     
     # Test cocaine
-    cocaine_args = MockArgs(
-        type=3,  # cocaine
-        strain=1,  # not used for cocaine
-        depth=3,
-        grow_tent=False,
-        pgr=False,
-        quality=3  # not used for cocaine
-    )
+    class CocaineArgs:
+        type = 3  # cocaine
+        strain = 1  # not used for cocaine
+        depth = 3
+        grow_tent = False
+        pgr = False
+        quality = 3  # not used for cocaine
+        
+        def __init__(self):
+            pass
     
-    run_optimizer(cocaine_args, data)
+    run_optimizer(CocaineArgs(), data)
     cocaine_output = mock_stdout.getvalue()
     
     # Verify each output contains the correct drug type

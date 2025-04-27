@@ -93,49 +93,97 @@ def calculate_units(drug_type: str, grow_tent: bool, pgr: bool, production_units
     return 1  # Default fallback
 
 
+def calculate_marijuana_cost(constants: Dict[str, Any], strain: str, units: int, 
+                           strain_data: Dict[str, Tuple[str, int]]) -> float:
+    """Calculate production cost for marijuana.
+    
+    Args:
+        constants: Dictionary containing constants for calculations
+        strain: Selected marijuana strain
+        units: Number of units produced
+        strain_data: Dictionary mapping strains to their effects and costs
+        
+    Returns:
+        Production cost per unit
+    """
+    seed_cost = strain_data[strain][1]  # Get the base cost of the strain
+    soil_cost_per_seed = constants['plant_soil_cost'] / constants['plant_soil_uses']
+    total_per_seed = seed_cost + soil_cost_per_seed
+    return total_per_seed / units
+
+
+def calculate_meth_cost(constants: Dict[str, Any], quality: int, 
+                      quality_costs: List[int]) -> float:
+    """Calculate production cost for meth.
+    
+    Args:
+        constants: Dictionary containing constants for calculations
+        quality: Selected meth quality (1-3)
+        quality_costs: List of costs for different meth qualities
+        
+    Returns:
+        Production cost per unit
+    """
+    pseudo_cost = quality_costs[quality-1]
+    total_batch_cost = pseudo_cost + constants['meth_acid_cost'] + constants['meth_phosphorus_cost']
+    return total_batch_cost / constants['meth_batch_size']
+
+
+def calculate_cocaine_cost(constants: Dict[str, Any], units: int,
+                         ingredient_prices: Dict[str, int]) -> float:
+    """Calculate production cost for cocaine.
+    
+    Args:
+        constants: Dictionary containing constants for calculations
+        units: Number of units produced
+        ingredient_prices: Dictionary mapping ingredients to their prices
+        
+    Returns:
+        Production cost per unit
+    """
+    soil_cost_per_seed = constants['plant_soil_cost'] / constants['plant_soil_uses']
+    seed_cost = constants['cocaine_seed_cost']
+    total_per_seed = seed_cost + soil_cost_per_seed
+    gasoline_cost = ingredient_prices['Gasoline'] * constants['gasoline_per_cocaine_unit']
+    return (total_per_seed / units) + gasoline_cost
+
+
 def calculate_cost(drug_type: str, constants: Dict[str, Any], cost_formula: str, 
-                  strain: Optional[str] = None, quality: Optional[int] = None, 
-                  units: Optional[int] = None, strain_data: Optional[Dict[str, Tuple[str, int]]] = None,
-                  quality_costs: Optional[List[int]] = None, 
-                  ingredient_prices: Optional[Dict[str, int]] = None) -> float:
+                  **kwargs) -> float:
     """Calculate production cost based on configuration.
     
     Args:
         drug_type: Type of drug being produced
         constants: Dictionary containing constants for calculations
         cost_formula: Formula to use for calculation
-        strain: Selected marijuana strain
-        quality: Selected meth quality
-        units: Number of units produced
-        strain_data: Dictionary mapping strains to their effects and costs
-        quality_costs: List of costs for different meth qualities
-        ingredient_prices: Dictionary mapping ingredients to their prices
+        **kwargs: Additional keyword arguments needed for specific drug types
         
     Returns:
         Production cost per unit
     """
     if cost_formula == 'soil_and_seed':
         # Marijuana: (seed_cost + soil_cost_per_seed) / units_per_seed
-        if strain and units and strain_data:
-            seed_cost = strain_data[strain][1]  # Get the base cost of the strain
-            soil_cost_per_seed = constants['plant_soil_cost'] / constants['plant_soil_uses']
-            total_per_seed = seed_cost + soil_cost_per_seed
-            return total_per_seed / units
+        return calculate_marijuana_cost(
+            constants, 
+            kwargs.get('strain', ''), 
+            kwargs.get('units', 1), 
+            kwargs.get('strain_data', {})
+        )
     
     elif cost_formula == 'batch_based':
         # Meth: (pseudo_cost + meth_acid_cost + meth_phosphorus_cost) / meth_batch_size
-        if quality is not None and quality_costs:
-            pseudo_cost = quality_costs[quality-1]
-            total_batch_cost = pseudo_cost + constants['meth_acid_cost'] + constants['meth_phosphorus_cost']
-            return total_batch_cost / constants['meth_batch_size']
+        return calculate_meth_cost(
+            constants, 
+            kwargs.get('quality', 3), 
+            kwargs.get('quality_costs', [])
+        )
     
     elif cost_formula == 'seed_and_gasoline':
         # Cocaine: (seed_cost + soil_cost_per_seed) / units_per_seed + gasoline_cost
-        if units and ingredient_prices:
-            soil_cost_per_seed = constants['plant_soil_cost'] / constants['plant_soil_uses']
-            seed_cost = constants['cocaine_seed_cost']
-            total_per_seed = seed_cost + soil_cost_per_seed
-            gasoline_cost = ingredient_prices['Gasoline'] * constants['gasoline_per_cocaine_unit']
-            return (total_per_seed / units) + gasoline_cost
+        return calculate_cocaine_cost(
+            constants, 
+            kwargs.get('units', 1), 
+            kwargs.get('ingredient_prices', {})
+        )
     
     return 0  # Default fallback

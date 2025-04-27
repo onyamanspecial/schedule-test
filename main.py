@@ -15,14 +15,7 @@ from src.cli.optimizer_cli import setup_optimizer_parser, run_optimizer, Capital
 def main():
     """Main entry point for the pathfinder tool."""
     # Load all required data
-    data = {}
-    (
-        data['max_effects'], data['effects'], data['effects_sorted'], 
-        data['effect_priorities'], data['combinations'], data['effect_multipliers'], 
-        data['ingredient_prices'], data['drug_types'], data['strain_data'], 
-        data['meth_qualities'], data['quality_names'], data['quality_costs'], 
-        data['drug_pricing']
-    ) = load_all_data()
+    data = load_all_data()
     
     # Setup main command-line argument parser
     parser = argparse.ArgumentParser(

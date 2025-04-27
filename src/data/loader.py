@@ -1,6 +1,6 @@
 import yaml
 from pathlib import Path
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Any
 
 def load_effects_data() -> Tuple[int, List[str]]:
     """Load effects configuration from YAML file.
@@ -99,24 +99,11 @@ def load_drug_pricing_data():
         data = yaml.safe_load(f)
     return data
 
-def load_all_data() -> Tuple[int, List[str], List[str], Dict[str, int], List[Tuple[str, str, str, str, str]], Dict[str, float], Dict[str, int], List[str], Dict[str, Tuple[str, int]], List[int], List[str], List[int], Dict]:
+def load_all_data() -> Dict[str, Any]:
     """Load and process all required data.
     
     Returns:
-        Tuple containing:
-        - Maximum effects allowed
-        - List of all effects
-        - Sorted list of effects
-        - Effect priority mapping
-        - List of ingredient combinations
-        - Effect multipliers dictionary
-        - Ingredient prices dictionary
-        - List of drug types
-        - Dictionary of marijuana strains
-        - List of meth qualities
-        - List of quality names
-        - List of quality costs
-        - Drug pricing configuration
+        Dictionary containing all loaded data
     """
     # Load base data
     max_effects, effects = load_effects_data()
@@ -136,4 +123,18 @@ def load_all_data() -> Tuple[int, List[str], List[str], Dict[str, int], List[Tup
     drug_types, strain_data, meth_qualities, quality_names, quality_costs = load_drug_types_data()
     drug_pricing = load_drug_pricing_data()
     
-    return max_effects, effects, effects_sorted, effect_priorities, combinations, effect_multipliers, ingredient_prices, drug_types, strain_data, meth_qualities, quality_names, quality_costs, drug_pricing
+    return {
+        'max_effects': max_effects,
+        'effects': effects,
+        'effects_sorted': effects_sorted,
+        'effect_priorities': effect_priorities,
+        'combinations': combinations,
+        'effect_multipliers': effect_multipliers,
+        'ingredient_prices': ingredient_prices,
+        'drug_types': drug_types,
+        'strain_data': strain_data,
+        'meth_qualities': meth_qualities,
+        'quality_names': quality_names,
+        'quality_costs': quality_costs,
+        'drug_pricing': drug_pricing
+    }
