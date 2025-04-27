@@ -224,7 +224,6 @@ def print_optimization_results(drug_type: str, effects: List[str], path: List[st
     # Print the results
     print(f"\nBest Combination for {drug_type}:")
     print(f"Production Cost: ${prod_cost:.2f}")
-    print(f"Ingredients: {', '.join(path)}")
     print(f"Ingredient Cost: ${ingredient_cost:.2f}")
     print(f"Total Cost: ${total_cost:.2f}")
     print(f"Total Value: ${total_value:.2f}")
