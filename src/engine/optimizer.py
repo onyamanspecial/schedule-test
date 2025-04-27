@@ -162,7 +162,6 @@ def calculate_cost(drug_type: str, constants: Dict[str, Any], cost_formula: str,
         Production cost per unit
     """
     if cost_formula == 'soil_and_seed':
-        # Marijuana: (seed_cost + soil_cost_per_seed) / units_per_seed
         return calculate_marijuana_cost(
             constants, 
             kwargs.get('strain', ''), 
@@ -171,7 +170,6 @@ def calculate_cost(drug_type: str, constants: Dict[str, Any], cost_formula: str,
         )
     
     elif cost_formula == 'batch_based':
-        # Meth: (pseudo_cost + meth_acid_cost + meth_phosphorus_cost) / meth_batch_size
         return calculate_meth_cost(
             constants, 
             kwargs.get('quality', 3), 
@@ -179,7 +177,6 @@ def calculate_cost(drug_type: str, constants: Dict[str, Any], cost_formula: str,
         )
     
     elif cost_formula == 'seed_and_gasoline':
-        # Cocaine: (seed_cost + soil_cost_per_seed) / units_per_seed + gasoline_cost
         return calculate_cocaine_cost(
             constants, 
             kwargs.get('units', 1), 

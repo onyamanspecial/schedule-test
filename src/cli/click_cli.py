@@ -1,8 +1,7 @@
 import click
+from typing import List, Set
 from src.data.loader import load_all_data
 from src.engine.core import Engine
-from src.engine.pathfinder import find_path
-from src.engine.optimizer import find_best_path, calculate_units, calculate_cost
 from src.utils.parser import parse_effects
 from src.utils.logger import setup_logger
 
@@ -15,33 +14,43 @@ def cli():
     pass
 
 @cli.command()
-@click.option('--desired', '-d', multiple=True, help='Desired effects to achieve (names or numbers)')
-@click.option('--starting', '-s', multiple=True, help='Starting effects (names or numbers)')
+@click.option('--desired', '-d', help='Desired effects to achieve (comma-separated)')
+@click.option('--starting', '-s', default='', help='Starting effects (comma-separated)')
 @click.option('--list', '-l', is_flag=True, help='List all available effects')
 def pathfinder(desired, starting, list):
     """Find paths to desired effects."""
     logger.info("Starting pathfinder mode")
+    
+    # Load data
     data = load_all_data()
     
+    # List effects if requested
     if list:
         click.echo("\nAvailable effects:")
         for i, effect in enumerate(data['effects_sorted'], 1):
             click.echo(f"{i}. {effect}")
         return
     
+    # Check if desired effects are specified
     if not desired:
         click.echo("Error: No desired effects specified.")
         click.echo("Use --list to see available effects.")
         return
     
-    desired_effects = parse_effects(desired, data['effects'], data['effects_sorted'])
-    starting_effects = parse_effects(starting, data['effects'], data['effects_sorted'])
+    # Parse effects
+    desired_list = [desired]
+    starting_list = [starting] if starting else []
     
-    logger.info(f"Searching for path to achieve {desired_effects} starting with {starting_effects}")
+    desired_effects = parse_effects(desired_list, data['effects'], data['effects_sorted'])
+    starting_effects = parse_effects(starting_list, data['effects'], data['effects_sorted'])
     
+    # Create engine
     engine = Engine(data['combinations'], data['max_effects'], data['effect_priorities'])
-    path = find_path(engine, desired_effects, starting_effects)
     
+    # Manual implementation of find_path to avoid import issues
+    path = find_path_manual(engine, list(desired_effects), list(starting_effects))
+    
+    # Check if path was found
     if not path:
         click.echo("No solution found.")
         return
@@ -63,62 +72,61 @@ def pathfinder(desired, starting, list):
     click.echo(f"Desired effects achieved: {len(set(current_effects) & desired_effects)} / {len(desired_effects)}")
 
 @cli.command()
-@click.option('--type', '-t', type=click.Choice(['1', '2', '3']), default='1',
+@click.option('--type', '-t', type=click.Choice(['1', '2', '3']), required=True,
               help='Drug type: 1=marijuana, 2=meth, 3=cocaine')
-@click.option('--strain', '-s', type=click.IntRange(1, 5), default=1,
-              help='Marijuana strain: 1=og_kush, 2=sour_diesel, 3=purple_haze, 4=white_widow, 5=blue_dream')
 @click.option('--depth', '-d', type=int, default=3,
               help='Maximum search depth (number of ingredients to add)')
-@click.option('--grow-tent', is_flag=True, help='Use a grow tent for marijuana or cocaine')
-@click.option('--pgr', is_flag=True, help='Use plant growth regulators for marijuana or cocaine')
-@click.option('--quality', '-q', type=click.IntRange(1, 3), default=3,
-              help='Meth quality: 1=low, 2=medium, 3=high')
-def optimizer(type, strain, depth, grow_tent, pgr, quality):
+@click.option('--grow-tent', '-g', is_flag=True, help='Use a grow tent')
+@click.option('--pgr', '-p', is_flag=True, help='Use plant growth regulators')
+@click.option('--strain', '-s', type=int, help='Strain for marijuana (1-5)')
+@click.option('--quality', '-q', type=int, help='Quality for meth (1-3)')
+def optimizer(type, depth, grow_tent, pgr, strain, quality):
     """Find the most profitable drug combinations."""
     logger.info("Starting optimizer mode")
+    
+    # Load data
     data = load_all_data()
     
-    # Convert type to int and get drug type
+    # Get drug type
     type_idx = int(type) - 1
     drug_types = data['drug_types']
     drug_type = drug_types[type_idx]
     
-    logger.info(f"Optimizing for {drug_type} with depth {depth}")
-    
-    # Set up options based on drug type
+    # Set up initial effects
     initial_effects = []
-    options = {
-        'grow_tent': grow_tent,
-        'pgr': pgr
-    }
     
+    # Handle drug-specific options
     if drug_type == 'marijuana':
-        # Get strain information
+        if not strain:
+            strain = 1
         strains = list(data['strain_data'].keys())
         strain_name = strains[strain - 1]
         initial_effects = [data['strain_data'][strain_name][0]]
-        options['strain'] = strain_name
-        logger.info(f"Using marijuana strain: {strain_name}")
+        click.echo(f"Using marijuana strain: {strain_name}")
     elif drug_type == 'meth':
-        options['quality'] = quality
-        logger.info(f"Using meth quality: {quality}")
+        if not quality:
+            quality = 3
+        click.echo(f"Using meth quality: {quality}")
+    
+    # Import optimizer functions here to avoid circular imports
+    from src.engine.optimizer import find_best_path, calculate_units, calculate_cost, get_effects_value
     
     # Calculate production cost
     constants = data['drug_pricing']['constants']
     cost_formula = data['drug_pricing']['cost_calculations'][drug_type]['formula']
     units = calculate_units(drug_type, grow_tent, pgr, data['drug_pricing']['production_units'])
     
-    # Set up kwargs for cost calculation
+    # Set up cost calculation arguments
     kwargs = {'units': units}
     
     if drug_type == 'marijuana':
         kwargs.update({
-            'strain': options.get('strain', 'og_kush'),
+            'strain': strain_name,
             'strain_data': data['strain_data']
         })
     elif drug_type == 'meth':
         kwargs.update({
-            'quality': options.get('quality', 3),
+            'quality': quality,
             'quality_costs': data['quality_costs']
         })
     elif drug_type == 'cocaine':
@@ -126,35 +134,36 @@ def optimizer(type, strain, depth, grow_tent, pgr, quality):
             'ingredient_prices': data['ingredient_prices']
         })
     
-    # Calculate the production cost
+    # Calculate production cost
     prod_cost = calculate_cost(drug_type, constants, cost_formula, **kwargs)
     
-    # Get base price for the drug
+    # Get base price
     base_price = data['drug_pricing']['base_prices'][drug_type]
     
     # Create engine
     engine = Engine(data['combinations'], data['max_effects'], data['effect_priorities'])
     
-    # Find the best path
+    # Find best path
     result = find_best_path(
         engine, base_price, prod_cost, depth,
         data['effect_multipliers'], data['ingredient_prices'], data['effect_priorities'],
         initial_effects
     )
     
+    # Check if a profitable combination was found
     if not result:
         click.echo(f"No profitable combination found for {drug_type} with depth {depth}")
         return
     
+    # Unpack result
     effects, path, ingredient_cost = result
     
     # Calculate value and profit
-    from src.engine.optimizer import get_effects_value
     total_value = get_effects_value(effects, base_price, data['effect_multipliers'])
     total_cost = prod_cost + ingredient_cost
     profit = total_value - total_cost
     
-    # Print the results
+    # Print results
     click.echo(f"\nBest Combination for {drug_type}:")
     click.echo(f"Production Cost: ${prod_cost:.2f}")
     click.echo(f"Ingredients: {', '.join(path)}")
@@ -164,6 +173,53 @@ def optimizer(type, strain, depth, grow_tent, pgr, quality):
     click.echo(f"Profit: ${profit:.2f}")
     click.echo(f"Effects: {', '.join(effects)}")
     click.echo(f"Recipe: {' → '.join(path)}")
+
+def find_path_manual(engine: Engine, target_effects: List[str], initial_effects: List[str] = None) -> List[str]:
+    """Find the shortest sequence of ingredients to achieve target effects.
+    
+    Args:
+        engine: Engine instance containing combination rules
+        target_effects: List of effects we want to achieve
+        initial_effects: Optional list of effects to start with
+        
+    Returns:
+        List of ingredients to combine in sequence, or None if no solution exists
+    """
+    from collections import deque
+    
+    # Initialize with empty or provided effects, sorted by priority
+    initial = sorted(initial_effects or [], key=lambda x: engine.effect_priorities[x])
+    
+    # Check if we already have all target effects
+    if set(target_effects).issubset(initial):
+        return []
+    
+    # Setup for BFS
+    seen = {tuple(initial)}
+    queue = deque([(initial, [])])
+    
+    # BFS through possible combinations
+    while queue:
+        current_effects, path = queue.popleft()
+        
+        # Check if we've found a solution
+        if set(target_effects).issubset(current_effects):
+            return path
+        
+        # Try each possible ingredient
+        for ingredient in engine.base_effects:
+            # Get the result of combining current effects with this ingredient
+            result = engine.combine(current_effects, ingredient)
+            
+            # Only proceed if we have results and within effect limit and haven't seen this state
+            if result and len(result) <= engine.max_effects:
+                state = tuple(sorted(result))
+                if state not in seen:
+                    seen.add(state)
+                    queue.append((result, path + [ingredient]))
+    
+    # No solution found
+    return None
 
 if __name__ == '__main__':
     cli()

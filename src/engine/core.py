@@ -51,10 +51,12 @@ class Engine:
         result = list(effects)
         
         # Only process if ingredient has a base effect
-        if ingredient_effect := self.base_effects.get(ingredient):
+        ingredient_effect = self.base_effects.get(ingredient)
+        if ingredient_effect:
             # Check for transformations with existing effects
             for idx, effect in enumerate(result):
-                if (key := (effect, ingredient)) in self.transforms:
+                key = (effect, ingredient)
+                if key in self.transforms:
                     new_effect = self.transforms[key][0]
                     if new_effect not in result:
                         result[idx] = new_effect

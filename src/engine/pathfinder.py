@@ -37,12 +37,15 @@ def find_path(engine: Engine, target_effects: List[str], initial_effects: Option
         
         # Try each possible ingredient
         for ingredient in engine.base_effects:
-            if result := engine.combine(current_effects, ingredient):
-                # Only proceed if within effect limit and haven't seen this state
-                if (len(result) <= engine.max_effects and 
-                    (state := tuple(result)) not in seen):
+            # Get the result of combining current effects with this ingredient
+            result = engine.combine(current_effects, ingredient)
+            
+            # Only proceed if we have results and within effect limit and haven't seen this state
+            if result and len(result) <= engine.max_effects:
+                state = tuple(sorted(result))
+                if state not in seen:
                     seen.add(state)
                     queue.append((result, path + [ingredient]))
     
     # No solution found
-    return None 
+    return None

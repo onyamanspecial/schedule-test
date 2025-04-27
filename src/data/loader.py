@@ -76,7 +76,6 @@ def load_drug_types_data():
     with open(Path('data/drug_types.yaml'), 'r') as f:
         data = yaml.safe_load(f)
     
-    # Extract marijuana strains into a dictionary with tuples (effect, cost)
     strains_data = {}
     for strain, info in data['marijuana_strains'].items():
         strains_data[strain] = (info['effect'], info['base_cost'])
@@ -105,21 +104,12 @@ def load_all_data() -> Dict[str, Any]:
     Returns:
         Dictionary containing all loaded data
     """
-    # Load base data
     max_effects, effects = load_effects_data()
-    
-    # Create sorted list and priorities
     effects_sorted = sorted(effects)
     effect_priorities = get_effect_priorities(effects)
-    
-    # Load combinations
     combinations = load_combinations_data()
-    
-    # Load multipliers and prices
     effect_multipliers = load_effect_multipliers()
     ingredient_prices = load_ingredient_prices()
-    
-    # Load drug types and pricing
     drug_types, strain_data, meth_qualities, quality_names, quality_costs = load_drug_types_data()
     drug_pricing = load_drug_pricing_data()
     
