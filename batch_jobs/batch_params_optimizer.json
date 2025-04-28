@@ -1,0 +1,17 @@
+[
+  {
+    "drug_type": "marijuana",
+    "depth": 6,
+    "prod_options": { "grow_tent": true, "pgr": false, "strain": "og_kush" }
+  },
+  {
+    "drug_type": "meth",
+    "depth": 7,
+    "prod_options": { "quality": 2 }
+  },
+  {
+    "drug_type": "cocaine",
+    "depth": 6,
+    "prod_options": { "grow_tent": true, "pgr": true, "strain": "og_kush" }
+  }
+]

@@ -1,0 +1,228 @@
+[
+  {
+    "status": "ok",
+    "params": {
+      "desired_effects": [
+        "Sedating"
+      ]
+    },
+    "effects": [
+      "Sedating"
+    ],
+    "path": [
+      "Flu Medicine"
+    ]
+  },
+  {
+    "status": "ok",
+    "params": {
+      "desired_effects": [
+        "Euphoric"
+      ]
+    },
+    "effects": [
+      "Euphoric",
+      "Toxic"
+    ],
+    "path": [
+      "Cuke",
+      "Gasoline"
+    ]
+  },
+  {
+    "status": "ok",
+    "params": {
+      "desired_effects": [
+        "Spicy",
+        "Long faced"
+      ]
+    },
+    "effects": [
+      "Long faced",
+      "Spicy"
+    ],
+    "path": [
+      "Horse Semen",
+      "Chili"
+    ]
+  },
+  {
+    "status": "ok",
+    "params": {
+      "desired_effects": [
+        "Tropic Thunder",
+        "Smelly"
+      ]
+    },
+    "effects": [
+      "Smelly",
+      "Sneaky",
+      "Tropic Thunder"
+    ],
+    "path": [
+      "Banana",
+      "Gasoline",
+      "Paracetamol"
+    ]
+  },
+  {
+    "status": "ok",
+    "params": {
+      "desired_effects": [
+        "Jennerising",
+        "Balding"
+      ]
+    },
+    "effects": [
+      "Balding",
+      "Jennerising"
+    ],
+    "path": [
+      "Iodine",
+      "Mouth Wash"
+    ]
+  },
+  {
+    "status": "ok",
+    "params": {
+      "desired_effects": [
+        "Disorienting",
+        "Foggy"
+      ],
+      "initial_effects": [
+        "Schizophrenic"
+      ]
+    },
+    "effects": [
+      "Disorienting",
+      "Foggy",
+      "Long faced",
+      "Schizophrenic",
+      "Toxic"
+    ],
+    "path": [
+      "Addy",
+      "Horse Semen",
+      "Mega Bean",
+      "Gasoline"
+    ]
+  },
+  {
+    "status": "ok",
+    "params": {
+      "desired_effects": [
+        "Athletic",
+        "Glowing"
+      ],
+      "initial_effects": [
+        "Refreshing"
+      ]
+    },
+    "effects": [
+      "Athletic",
+      "Bright-Eyed",
+      "Energizing",
+      "Glowing",
+      "Refreshing"
+    ],
+    "path": [
+      "Mega Bean",
+      "Cuke",
+      "Energy Drink",
+      "Battery"
+    ]
+  },
+  {
+    "status": "ok",
+    "params": {
+      "desired_effects": [
+        "Zombifying",
+        "Sneaky"
+      ]
+    },
+    "effects": [
+      "Bright-Eyed",
+      "Sneaky",
+      "Tropic Thunder",
+      "Zombifying"
+    ],
+    "path": [
+      "Cuke",
+      "Gasoline",
+      "Battery",
+      "Paracetamol"
+    ]
+  },
+  {
+    "status": "ok",
+    "params": {
+      "desired_effects": [
+        "Euphoric",
+        "Focused"
+      ],
+      "initial_effects": [
+        "Calming"
+      ]
+    },
+    "effects": [
+      "Athletic",
+      "Euphoric",
+      "Focused",
+      "Gingeritis",
+      "Laxative"
+    ],
+    "path": [
+      "Mega Bean",
+      "Chili",
+      "Energy Drink",
+      "Banana"
+    ]
+  },
+  {
+    "status": "ok",
+    "params": {
+      "desired_effects": [
+        "Paranoia",
+        "Munchies",
+        "Calorie-Dense"
+      ]
+    },
+    "effects": [
+      "Calorie-Dense",
+      "Energizing",
+      "Munchies",
+      "Paranoia"
+    ],
+    "path": [
+      "Paracetamol",
+      "Motor Oil",
+      "Donut",
+      "Cuke"
+    ]
+  },
+  {
+    "status": "ok",
+    "params": {
+      "desired_effects": [
+        "Toxic",
+        "Shrinking"
+      ]
+    },
+    "effects": [
+      "Athletic",
+      "Gingeritis",
+      "Refreshing",
+      "Shrinking",
+      "Smelly",
+      "Toxic"
+    ],
+    "path": [
+      "Addy",
+      "Horse Semen",
+      "Gasoline",
+      "Banana",
+      "Gasoline",
+      "Energy Drink"
+    ]
+  }
+]

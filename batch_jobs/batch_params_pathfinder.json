@@ -1,0 +1,13 @@
+[
+  { "desired_effects": ["Sedating"] },
+  { "desired_effects": ["Euphoric"] },
+  { "desired_effects": ["Euphoric", "Focused"], "initial_effects": ["Calming"] },
+  { "desired_effects": ["Paranoia", "Munchies", "Calorie-Dense"] },
+  { "desired_effects": ["Athletic", "Glowing"], "initial_effects": ["Refreshing"] },
+  { "desired_effects": ["Spicy", "Long faced"] },
+  { "desired_effects": ["Disorienting", "Foggy"], "initial_effects": ["Schizophrenic"] },
+  { "desired_effects": ["Tropic Thunder", "Smelly"] },
+  { "desired_effects": ["Zombifying", "Sneaky"] },
+  { "desired_effects": ["Toxic", "Shrinking"] },
+  { "desired_effects": ["Jennerising", "Balding"] }
+]
